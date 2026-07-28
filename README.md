@@ -89,16 +89,33 @@ cd ShopKart
 
 ### 2. Environment Configuration
 
-Create a `.env` file in the `server` directory (or use default zero-config fallbacks):
+Copy the provided sample `.env.example` template to `.env` in the `server/` directory:
+
+```bash
+cp server/.env.example server/.env
+```
+
+#### Sample `server/.env.example` Layout:
 
 ```env
-# server/.env
+# Server Network & Environment
 PORT=5000
 NODE_ENV=development
+CLIENT_URL=http://localhost:5173
+
+# Database Connection
+MONGO_URI=mongodb://localhost:27017/shopkart
+
+# Security & JWT Tokens
 JWT_SECRET=your_jwt_secret_key_here
 JWT_REFRESH_SECRET=your_jwt_refresh_secret_key_here
-MONGO_URI=mongodb://localhost:27017/shopkart
 ADMIN_EMAIL=admin@shopkart.com
+
+# SMTP Email Configuration
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_gmail_app_password
 ```
 
 ---
