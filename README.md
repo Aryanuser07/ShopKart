@@ -6,7 +6,6 @@
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 [![Express](https://img.shields.io/badge/Express-4.18-lightgrey.svg)](https://expressjs.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8.svg)](https://tailwindcss.com/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 > **ShopKart** is a production-grade, full-stack E-Commerce application designed as an architectural reference model for building modern web applications. Featuring a sleek Kokonut-styled visual design system, real-time multi-tab state synchronization, multi-currency conversion, role-based access control (RBAC), and a zero-config hybrid database fallback system.
 
@@ -196,9 +195,3 @@ Automated testing and build verification are configured in `.github/workflows/ci
 
 - **Frontend**: [React 18](https://react.dev/), [Vite](https://vitejs.dev/), [TypeScript](https://www.typescriptlang.org/), [Tailwind CSS](https://tailwindcss.com/), [Framer Motion](https://www.framer.com/motion/), [Lucide React](https://lucide.dev/), [Chart.js](https://www.chartjs.org/)
 - **Backend**: [Node.js](https://nodejs.org/), [Express.js](https://expressjs.com/), [Mongoose](https://mongoosejs.com/), [JSONWebToken](https://jwt.io/), [BcryptJS](https://github.com/dcodeIO/bcrypt.js)
-
----
-
-## 📄 License
-
-This project is open-source and available under the [MIT License](LICENSE).
