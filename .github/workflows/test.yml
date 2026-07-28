@@ -1,0 +1,37 @@
+name: Automated Testing Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  unit-and-integration-tests:
+    name: Run Jest API Test Suite & Frontend Build Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: 'npm'
+          cache-dependency-path: |
+            client/package-lock.json
+            server/package-lock.json
+
+      - name: Install & Run Server Jest Tests
+        run: |
+          cd server
+          npm ci
+          npm test
+
+      - name: Install & Verify Client Build
+        run: |
+          cd client
+          npm ci
+          npm run build

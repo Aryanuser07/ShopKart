@@ -1,0 +1,231 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#faf9f6] text-[#1a201c] font-sans tracking-tight;
+  }
+}
+
+/* Warm Alabaster Editorial Glassmorphism */
+.glass-panel {
+  background: rgba(250, 249, 246, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(235, 152, 0, 0.15);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* Custom Theme Expanding Button (Center-Out Radial Fill) */
+.btn-theme-expand,
+.btn-animated-fill {
+  position: relative;
+  z-index: 1;
+  font-weight: 900;
+  border-radius: 15px;
+  overflow: hidden;
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-box-shadow: 4px 8px 19px -3px rgba(0, 0, 0, 0.2);
+  box-shadow: 4px 8px 19px -3px rgba(0, 0, 0, 0.2);
+}
+
+.btn-theme-expand::before,
+.btn-animated-fill::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 0;
+  width: 0;
+  border-radius: 15px;
+  background-color: #242b27;
+  z-index: -1;
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-box-shadow: 4px 8px 19px -3px rgba(0, 0, 0, 0.27);
+  box-shadow: 4px 8px 19px -3px rgba(0, 0, 0, 0.27);
+}
+
+.btn-theme-expand:hover::before,
+.btn-animated-fill:hover::before {
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+.btn-theme-expand:active,
+.btn-animated-fill:active {
+  transform: scale(85%);
+}
+
+/* Theme Gold Variant */
+.btn-theme-expand-gold,
+.btn-animated-gold {
+  background: #f59e0b;
+  color: #242b27;
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  box-shadow: 4px 8px 19px -3px rgba(245, 158, 11, 0.35);
+}
+
+.btn-theme-expand-gold::before,
+.btn-animated-gold::before {
+  background-color: #242b27;
+}
+
+.btn-theme-expand-gold:hover,
+.btn-animated-gold:hover {
+  color: #ffffff !important;
+}
+
+/* Theme Dark Variant */
+.btn-animated-dark {
+  background: #242b27;
+  color: #ffffff;
+  border: 1px solid #1a201c;
+  box-shadow: 4px 8px 19px -3px rgba(0, 0, 0, 0.25);
+}
+
+.btn-animated-dark::before {
+  background-color: #eb9800;
+}
+
+.btn-animated-dark:hover {
+  color: #242b27 !important;
+}
+
+/* Theme Outline Variant */
+.btn-theme-expand-outline,
+.btn-animated-outline {
+  background: #ffffff;
+  color: #242b27;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: 4px 8px 19px -3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-theme-expand-outline::before,
+.btn-animated-outline::before {
+  background-color: #242b27;
+}
+
+.btn-theme-expand-outline:hover,
+.btn-animated-outline:hover {
+  color: #ffffff !important;
+}
+
+/* Airbnb Custom Styled Range Input */
+.airbnb-range-input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 9999px;
+  outline: none;
+  cursor: pointer;
+}
+
+.airbnb-range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #eb9800;
+  cursor: grab;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.airbnb-range-input::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 6px rgba(235, 152, 0, 0.18);
+}
+
+.airbnb-range-input::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.15);
+  box-shadow: 0 0 0 8px rgba(235, 152, 0, 0.25);
+}
+
+.airbnb-range-input::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #eb9800;
+  cursor: grab;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f4f3ef;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d6d3cd;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #eb9800;
+}
+
+/* Shimmer Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(235,152,0,0.08) 50%, rgba(0,0,0,0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Footer Animated Radial Gradient Pattern */
+.footer-animated-bg {
+  width: 100%;
+  height: 100%;
+  --s: 100px;
+  --c-inner: rgba(235, 152, 0, 0.22);
+  --c-outer: rgba(245, 158, 11, 0.1);
+  --c-outer2: #faf9f6;
+
+  background: radial-gradient(
+    circle at 50% 99%,
+    transparent 10%,
+    var(--c-inner) 10% 30%,
+    var(--c-outer) 30% 60%,
+    var(--c-outer2) 60% 100%,
+    transparent 100%
+  );
+  background-size: var(--s) var(--s);
+  animation: move 18s infinite linear;
+}
+
+@keyframes move {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 100% 0;
+  }
+}

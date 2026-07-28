@@ -1,0 +1,2856 @@
+[
+  {
+    "_id": "ord-1785236425804",
+    "id": "ord-1785236425804",
+    "user": {
+      "_id": "6a688a6b15ed0c6f26a147b4",
+      "name": "Aryan Test7",
+      "email": "fhub0342@gmail.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-28T11:00:25.829Z",
+    "itemsPrice": 14999,
+    "shippingPrice": 0,
+    "taxPrice": 2700,
+    "totalPrice": 17699,
+    "orderStatus": "Delivered",
+    "trackingNumber": "SK-4344985",
+    "estimatedDelivery": "2026-08-01T11:00:25.789Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-28T11:00:25.789Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      },
+      {
+        "status": "Processing",
+        "location": "ShopKart Automated Warehouse",
+        "timestamp": "2026-07-28T11:00:25.829Z",
+        "note": "Payment verified via Stripe Test Sandbox mode"
+      },
+      {
+        "status": "Delivered",
+        "location": "ShopKart Regional Distribution Hub",
+        "timestamp": "2026-07-28T11:00:37.493Z",
+        "note": "Status updated to Delivered by Admin"
+      }
+    ],
+    "createdAt": "2026-07-28T11:00:25.804Z",
+    "customerName": "Aryan Test7",
+    "customerEmail": "fhub0342@gmail.com",
+    "paymentResult": {
+      "id": "pi_simulated_1785236425829",
+      "status": "succeeded",
+      "updateTime": "2026-07-28T11:00:25.829Z",
+      "emailAddress": "fhub0342@gmail.com"
+    },
+    "fulfillmentStatus": "Delivered",
+    "paymentStatus": "Paid"
+  },
+  {
+    "_id": "ord-1785236098248",
+    "id": "ord-1785236098248",
+    "user": {
+      "_id": "6a688a6b15ed0c6f26a147b4",
+      "name": "Aryan Test7",
+      "email": "fhub0342@gmail.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-28T10:54:58.268Z",
+    "itemsPrice": 14999,
+    "shippingPrice": 0,
+    "taxPrice": 2700,
+    "totalPrice": 17699,
+    "orderStatus": "Delivered",
+    "trackingNumber": "SK-1442579",
+    "estimatedDelivery": "2026-08-01T10:54:58.235Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-28T10:54:58.235Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      },
+      {
+        "status": "Processing",
+        "location": "ShopKart Automated Warehouse",
+        "timestamp": "2026-07-28T10:54:58.268Z",
+        "note": "Payment verified via Stripe Test Sandbox mode"
+      },
+      {
+        "status": "Delivered",
+        "location": "ShopKart Regional Distribution Hub",
+        "timestamp": "2026-07-28T10:59:54.089Z",
+        "note": "Status updated to Delivered by Admin"
+      }
+    ],
+    "createdAt": "2026-07-28T10:54:58.248Z",
+    "customerName": "Aryan Test7",
+    "customerEmail": "fhub0342@gmail.com",
+    "fulfillmentStatus": "Delivered",
+    "paymentResult": {
+      "id": "pi_simulated_1785236098268",
+      "status": "succeeded",
+      "updateTime": "2026-07-28T10:54:58.268Z",
+      "emailAddress": "fhub0342@gmail.com"
+    },
+    "paymentStatus": "Paid"
+  },
+  {
+    "_id": "ord-1785233407952",
+    "id": "ord-1785233407952",
+    "user": {
+      "id": "6a66ff0eb83f06346791ac25",
+      "_id": "6a66ff0eb83f06346791ac25",
+      "name": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1784886265703",
+        "title": "Laptop Test Rawat",
+        "price": 8833,
+        "image": "https://fastly.picsum.photos/id/6/5000/3333.jpg?hmac=pq9FRpg2xkAQ7J9JTrBtyFcp9-qvlu8ycAi7bUHlL7I",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India",
+      "fullName": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-28T10:10:07.952Z",
+    "itemsPrice": 8833,
+    "shippingPrice": 0,
+    "taxPrice": 1590,
+    "totalPrice": 10423,
+    "orderStatus": "Refunded",
+    "trackingNumber": "SK-5781980",
+    "estimatedDelivery": "2026-08-01T10:10:07.934Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-28T10:10:07.934Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      },
+      {
+        "status": "Refunded",
+        "location": "ShopKart Regional Distribution Hub",
+        "timestamp": "2026-07-28T10:19:12.303Z",
+        "note": "Status updated to Refunded by Admin"
+      }
+    ],
+    "createdAt": "2026-07-28T10:10:07.952Z",
+    "customerName": "Test July",
+    "customerEmail": "test2@yopmail.com",
+    "fulfillmentStatus": "Refunded",
+    "paymentStatus": "Refunded",
+    "paymentResult": {
+      "id": "pi_simulated_1785233407987",
+      "status": "succeeded",
+      "updateTime": "2026-07-28T10:10:07.987Z",
+      "emailAddress": "test2@yopmail.com"
+    }
+  },
+  {
+    "_id": "ord-1785233011751",
+    "id": "ord-1785233011751",
+    "user": {
+      "id": "6a66ff0eb83f06346791ac25",
+      "_id": "6a66ff0eb83f06346791ac25",
+      "name": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1784886265703",
+        "title": "Laptop Test Rawat",
+        "price": 8833,
+        "image": "https://fastly.picsum.photos/id/6/5000/3333.jpg?hmac=pq9FRpg2xkAQ7J9JTrBtyFcp9-qvlu8ycAi7bUHlL7I",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India",
+      "fullName": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-28T10:03:31.752Z",
+    "itemsPrice": 8833,
+    "shippingPrice": 0,
+    "taxPrice": 1590,
+    "totalPrice": 10423,
+    "orderStatus": "Processing",
+    "trackingNumber": "SK-9061616",
+    "estimatedDelivery": "2026-08-01T10:03:31.749Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-28T10:03:31.749Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-28T10:03:31.752Z",
+    "customerName": "Test July",
+    "customerEmail": "test2@yopmail.com",
+    "fulfillmentStatus": "Refunded",
+    "paymentStatus": "Refunded",
+    "paymentResult": {
+      "id": "pi_simulated_1785233011771",
+      "status": "succeeded",
+      "updateTime": "2026-07-28T10:03:31.771Z",
+      "emailAddress": "test2@yopmail.com"
+    }
+  },
+  {
+    "_id": "ord-1785232771134",
+    "id": "ord-1785232771134",
+    "user": {
+      "id": "user-admin-1",
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-3",
+        "title": "VaporMax Air Kinetic Running Sneakers",
+        "price": 8999,
+        "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "100 Tech Park Way, Sector 62",
+      "city": "Noida",
+      "state": "Uttar Pradesh",
+      "postalCode": "201301",
+      "country": "India",
+      "fullName": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-28T09:59:31.134Z",
+    "itemsPrice": 23998,
+    "shippingPrice": 0,
+    "taxPrice": 4320,
+    "totalPrice": 28318,
+    "orderStatus": "Refunded",
+    "trackingNumber": "SK-8191362",
+    "estimatedDelivery": "2026-08-01T09:59:31.111Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Noida, Uttar Pradesh",
+        "timestamp": "2026-07-28T09:59:31.111Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      },
+      {
+        "status": "Cancelled",
+        "location": "ShopKart Regional Distribution Hub",
+        "timestamp": "2026-07-28T10:31:07.725Z",
+        "note": "Status updated to Cancelled by Admin"
+      },
+      {
+        "status": "Refunded",
+        "location": "ShopKart Regional Distribution Hub",
+        "timestamp": "2026-07-28T10:52:33.793Z",
+        "note": "Status updated to Refunded by Admin"
+      }
+    ],
+    "createdAt": "2026-07-28T09:59:31.134Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Refunded",
+    "paymentStatus": "Refunded",
+    "paymentResult": {
+      "id": "pi_simulated_1785232771166",
+      "status": "succeeded",
+      "updateTime": "2026-07-28T09:59:31.166Z",
+      "emailAddress": "admin@shopkart.com"
+    }
+  },
+  {
+    "_id": "ord-1785232482903",
+    "id": "ord-1785232482903",
+    "user": {
+      "id": "user-admin-1",
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1784886265703",
+        "title": "Laptop Test Rawat",
+        "price": 8833,
+        "image": "https://fastly.picsum.photos/id/6/5000/3333.jpg?hmac=pq9FRpg2xkAQ7J9JTrBtyFcp9-qvlu8ycAi7bUHlL7I",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India",
+      "fullName": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-28T09:54:42.903Z",
+    "itemsPrice": 8833,
+    "shippingPrice": 0,
+    "taxPrice": 1590,
+    "totalPrice": 10423,
+    "orderStatus": "Refunded",
+    "trackingNumber": "SK-4108702",
+    "estimatedDelivery": "2026-08-01T09:54:42.886Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-28T09:54:42.886Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      },
+      {
+        "status": "Cancelled",
+        "location": "ShopKart Regional Distribution Hub",
+        "timestamp": "2026-07-28T10:52:23.366Z",
+        "note": "Status updated to Cancelled by Admin"
+      },
+      {
+        "status": "Refunded",
+        "location": "ShopKart Regional Distribution Hub",
+        "timestamp": "2026-07-28T10:52:30.290Z",
+        "note": "Status updated to Refunded by Admin"
+      }
+    ],
+    "createdAt": "2026-07-28T09:54:42.903Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Refunded",
+    "paymentStatus": "Refunded",
+    "paymentResult": {
+      "id": "pi_simulated_1785232482933",
+      "status": "succeeded",
+      "updateTime": "2026-07-28T09:54:42.933Z",
+      "emailAddress": "admin@shopkart.com"
+    }
+  },
+  {
+    "_id": "ord-1785227431193",
+    "id": "ord-1785227431193",
+    "user": {
+      "id": "6a66ff0eb83f06346791ac25",
+      "_id": "6a66ff0eb83f06346791ac25",
+      "name": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1784886265703",
+        "title": "Laptop Test Rawat",
+        "price": 8833,
+        "image": "https://fastly.picsum.photos/id/6/5000/3333.jpg?hmac=pq9FRpg2xkAQ7J9JTrBtyFcp9-qvlu8ycAi7bUHlL7I",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India",
+      "fullName": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-28T08:30:31.193Z",
+    "itemsPrice": 8833,
+    "shippingPrice": 0,
+    "taxPrice": 1590,
+    "totalPrice": 10423,
+    "orderStatus": "Processing",
+    "trackingNumber": "SK-2940070",
+    "estimatedDelivery": "2026-08-01T08:30:31.188Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-28T08:30:31.188Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-28T08:30:31.193Z",
+    "customerName": "Test July",
+    "customerEmail": "test2@yopmail.com",
+    "paymentResult": {
+      "id": "pi_simulated_1785227431209",
+      "status": "succeeded",
+      "updateTime": "2026-07-28T08:30:31.209Z",
+      "emailAddress": "test2@yopmail.com"
+    },
+    "fulfillmentStatus": "Delivered"
+  },
+  {
+    "_id": "ord-1785227017369",
+    "id": "ord-1785227017369",
+    "user": {
+      "id": "user-admin-1",
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 10
+      }
+    ],
+    "shippingAddress": {
+      "street": "100 Tech Park Way, Sector 62",
+      "city": "Noida",
+      "state": "Uttar Pradesh",
+      "postalCode": "201301",
+      "country": "India",
+      "fullName": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-28T08:23:37.369Z",
+    "itemsPrice": 149990,
+    "shippingPrice": 0,
+    "taxPrice": 26998,
+    "totalPrice": 176988,
+    "orderStatus": "Processing",
+    "trackingNumber": "SK-8422039",
+    "estimatedDelivery": "2026-08-01T08:23:37.352Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Noida, Uttar Pradesh",
+        "timestamp": "2026-07-28T08:23:37.352Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-28T08:23:37.369Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "paymentResult": {
+      "id": "pi_simulated_1785227017389",
+      "status": "succeeded",
+      "updateTime": "2026-07-28T08:23:37.389Z",
+      "emailAddress": "admin@shopkart.com"
+    },
+    "fulfillmentStatus": "Delivered"
+  },
+  {
+    "_id": "ord-1785151191244",
+    "id": "ord-1785151191244",
+    "user": {
+      "_id": "6a66ff0eb83f06346791ac25",
+      "name": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T11:19:51.244Z",
+    "itemsPrice": 14999,
+    "shippingPrice": 0,
+    "taxPrice": 2700,
+    "totalPrice": 17699,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-7042771",
+    "estimatedDelivery": "2026-07-31T11:19:51.217Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T11:19:51.218Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T11:19:51.244Z",
+    "customerName": "Test July",
+    "customerEmail": "test2@yopmail.com",
+    "fulfillmentStatus": "Refunded",
+    "paymentStatus": "Refunded"
+  },
+  {
+    "_id": "ord-1785151294712",
+    "id": "ord-1785151294712",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "COD",
+    "isPaid": true,
+    "paidAt": "2026-07-27T11:21:34.712Z",
+    "itemsPrice": 14999,
+    "shippingPrice": 0,
+    "taxPrice": 2700,
+    "totalPrice": 17699,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-8702862",
+    "estimatedDelivery": "2026-07-31T11:21:34.709Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T11:21:34.709Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T11:21:34.712Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Delivered"
+  },
+  {
+    "_id": "ord-1785223188388",
+    "id": "ord-1785223188388",
+    "user": {
+      "_id": "6a66ff0eb83f06346791ac25",
+      "name": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-2",
+        "title": "UltraSpeed Pro M2 Wireless Gaming Mouse",
+        "price": 4499,
+        "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&q=80&w=800",
+        "quantity": 2
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-28T07:19:48.388Z",
+    "itemsPrice": 8998,
+    "shippingPrice": 0,
+    "taxPrice": 1620,
+    "totalPrice": 10618,
+    "orderStatus": "Processing",
+    "trackingNumber": "SK-2688917",
+    "estimatedDelivery": "2026-08-01T07:19:48.367Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-28T07:19:48.367Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-28T07:19:48.388Z",
+    "customerName": "Test July",
+    "customerEmail": "test2@yopmail.com",
+    "fulfillmentStatus": "Delivered"
+  },
+  {
+    "_id": "ord-1785223640451",
+    "id": "ord-1785223640451",
+    "user": {
+      "id": "6a66ff0eb83f06346791ac25",
+      "_id": "6a66ff0eb83f06346791ac25",
+      "name": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-2",
+        "title": "UltraSpeed Pro M2 Wireless Gaming Mouse",
+        "price": 4499,
+        "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&q=80&w=800",
+        "quantity": 5
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India",
+      "fullName": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-28T07:27:20.451Z",
+    "itemsPrice": 22495,
+    "shippingPrice": 0,
+    "taxPrice": 4049,
+    "totalPrice": 26544,
+    "orderStatus": "Processing",
+    "trackingNumber": "SK-2977120",
+    "estimatedDelivery": "2026-08-01T07:27:20.437Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-28T07:27:20.437Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-28T07:27:20.451Z",
+    "customerName": "Test July",
+    "customerEmail": "test2@yopmail.com",
+    "fulfillmentStatus": "Shipped"
+  },
+  {
+    "_id": "ord-1785223998087",
+    "id": "ord-1785223998087",
+    "user": {
+      "id": "6a66ff0eb83f06346791ac25",
+      "_id": "6a66ff0eb83f06346791ac25",
+      "name": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-3",
+        "title": "VaporMax Air Kinetic Running Sneakers",
+        "price": 8999,
+        "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-2",
+        "title": "UltraSpeed Pro M2 Wireless Gaming Mouse",
+        "price": 4499,
+        "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India",
+      "fullName": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-28T07:33:18.087Z",
+    "itemsPrice": 28497,
+    "shippingPrice": 0,
+    "taxPrice": 5129,
+    "totalPrice": 33626,
+    "orderStatus": "Processing",
+    "trackingNumber": "SK-9963293",
+    "estimatedDelivery": "2026-08-01T07:33:18.067Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-28T07:33:18.067Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-28T07:33:18.087Z",
+    "customerName": "Test July",
+    "customerEmail": "test2@yopmail.com",
+    "fulfillmentStatus": "Shipped"
+  },
+  {
+    "_id": "ord-1785224272260",
+    "id": "ord-1785224272260",
+    "user": {
+      "id": "6a66ff0eb83f06346791ac25",
+      "_id": "6a66ff0eb83f06346791ac25",
+      "name": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India",
+      "fullName": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-28T07:37:52.260Z",
+    "itemsPrice": 14999,
+    "shippingPrice": 0,
+    "taxPrice": 2700,
+    "totalPrice": 17699,
+    "orderStatus": "Processing",
+    "trackingNumber": "SK-7684077",
+    "estimatedDelivery": "2026-08-01T07:37:52.256Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-28T07:37:52.256Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-28T07:37:52.260Z",
+    "customerName": "Test July",
+    "customerEmail": "test2@yopmail.com",
+    "fulfillmentStatus": "Shipped"
+  },
+  {
+    "_id": "ord-1785224493030",
+    "id": "ord-1785224493030",
+    "user": {
+      "id": "6a66ff0eb83f06346791ac25",
+      "_id": "6a66ff0eb83f06346791ac25",
+      "name": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-6",
+        "title": "Urban Canvas Roll-Top Backpack",
+        "price": 4999,
+        "image": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&q=80&w=800",
+        "quantity": 12
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India",
+      "fullName": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-28T07:41:33.030Z",
+    "itemsPrice": 59988,
+    "shippingPrice": 0,
+    "taxPrice": 10798,
+    "totalPrice": 70786,
+    "orderStatus": "Processing",
+    "trackingNumber": "SK-8554612",
+    "estimatedDelivery": "2026-08-01T07:41:33.012Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-28T07:41:33.012Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-28T07:41:33.030Z",
+    "customerName": "Test July",
+    "customerEmail": "test2@yopmail.com",
+    "fulfillmentStatus": "Delivered"
+  },
+  {
+    "_id": "ord-1785224917928",
+    "id": "ord-1785224917928",
+    "user": {
+      "id": "6a66ff0eb83f06346791ac25",
+      "_id": "6a66ff0eb83f06346791ac25",
+      "name": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-2",
+        "title": "UltraSpeed Pro M2 Wireless Gaming Mouse",
+        "price": 4499,
+        "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&q=80&w=800",
+        "quantity": 8
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India",
+      "fullName": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-28T07:48:37.928Z",
+    "itemsPrice": 35992,
+    "shippingPrice": 0,
+    "taxPrice": 6479,
+    "totalPrice": 42471,
+    "orderStatus": "Processing",
+    "trackingNumber": "SK-6877855",
+    "estimatedDelivery": "2026-08-01T07:48:37.922Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-28T07:48:37.922Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-28T07:48:37.928Z",
+    "customerName": "Test July",
+    "customerEmail": "test2@yopmail.com",
+    "fulfillmentStatus": "Refunded",
+    "paymentStatus": "Refunded"
+  },
+  {
+    "_id": "ord-1785225380035",
+    "id": "ord-1785225380035",
+    "user": {
+      "id": "6a66ff0eb83f06346791ac25",
+      "_id": "6a66ff0eb83f06346791ac25",
+      "name": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India",
+      "fullName": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-28T07:56:20.035Z",
+    "itemsPrice": 14999,
+    "shippingPrice": 0,
+    "taxPrice": 2700,
+    "totalPrice": 17699,
+    "orderStatus": "Processing",
+    "trackingNumber": "SK-5034160",
+    "estimatedDelivery": "2026-08-01T07:56:20.029Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-28T07:56:20.029Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-28T07:56:20.035Z",
+    "customerName": "Test July",
+    "customerEmail": "test2@yopmail.com",
+    "fulfillmentStatus": "Delivered"
+  },
+  {
+    "_id": "ord-1785225652880",
+    "id": "ord-1785225652880",
+    "user": {
+      "id": "6a66ff0eb83f06346791ac25",
+      "_id": "6a66ff0eb83f06346791ac25",
+      "name": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India",
+      "fullName": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-28T08:00:52.880Z",
+    "itemsPrice": 14999,
+    "shippingPrice": 0,
+    "taxPrice": 2700,
+    "totalPrice": 17699,
+    "orderStatus": "Processing",
+    "trackingNumber": "SK-4393497",
+    "estimatedDelivery": "2026-08-01T08:00:52.860Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-28T08:00:52.860Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-28T08:00:52.880Z",
+    "customerName": "Test July",
+    "customerEmail": "test2@yopmail.com",
+    "fulfillmentStatus": "Delivered"
+  },
+  {
+    "_id": "ord-1785130467419",
+    "id": "ord-1785130467419",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T05:34:27.419Z",
+    "itemsPrice": 14999,
+    "shippingPrice": 0,
+    "taxPrice": 2700,
+    "totalPrice": 17699,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-9981071",
+    "estimatedDelivery": "2026-07-31T05:34:27.402Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T05:34:27.402Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T05:34:27.419Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785130703549",
+    "id": "ord-1785130703549",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-2",
+        "title": "UltraSpeed Pro M2 Wireless Gaming Mouse",
+        "price": 4499,
+        "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T05:38:23.549Z",
+    "itemsPrice": 19498,
+    "shippingPrice": 0,
+    "taxPrice": 3510,
+    "totalPrice": 23008,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-9119686",
+    "estimatedDelivery": "2026-07-31T05:38:23.530Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T05:38:23.530Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T05:38:23.549Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785130735423",
+    "id": "ord-1785130735423",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T05:38:55.423Z",
+    "itemsPrice": 14999,
+    "shippingPrice": 0,
+    "taxPrice": 2700,
+    "totalPrice": 17699,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-5673868",
+    "estimatedDelivery": "2026-07-31T05:38:55.420Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T05:38:55.420Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T05:38:55.423Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785130899961",
+    "id": "ord-1785130899961",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-2",
+        "title": "UltraSpeed Pro M2 Wireless Gaming Mouse",
+        "price": 4499,
+        "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-4",
+        "title": "Chronos Smart Watch Ultra Titanium Edition",
+        "price": 18999,
+        "image": "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-3",
+        "title": "VaporMax Air Kinetic Running Sneakers",
+        "price": 8999,
+        "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-5",
+        "title": "Lumina Minimalist Ergonomic Desk Lamp",
+        "price": 3499,
+        "image": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T05:41:39.961Z",
+    "itemsPrice": 50995,
+    "shippingPrice": 0,
+    "taxPrice": 9179,
+    "totalPrice": 60174,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-4285380",
+    "estimatedDelivery": "2026-07-31T05:41:39.950Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T05:41:39.950Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T05:41:39.961Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785131157824",
+    "id": "ord-1785131157824",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-2",
+        "title": "UltraSpeed Pro M2 Wireless Gaming Mouse",
+        "price": 4499,
+        "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-3",
+        "title": "VaporMax Air Kinetic Running Sneakers",
+        "price": 8999,
+        "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-4",
+        "title": "Chronos Smart Watch Ultra Titanium Edition",
+        "price": 18999,
+        "image": "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-5",
+        "title": "Lumina Minimalist Ergonomic Desk Lamp",
+        "price": 3499,
+        "image": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T05:45:57.824Z",
+    "itemsPrice": 50995,
+    "shippingPrice": 0,
+    "taxPrice": 9179,
+    "totalPrice": 60174,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-8134422",
+    "estimatedDelivery": "2026-07-31T05:45:57.805Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T05:45:57.805Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T05:45:57.824Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785131591036",
+    "id": "ord-1785131591036",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 25
+      }
+    ],
+    "shippingAddress": {
+      "street": "100 Tech Park Way, Sector 62",
+      "city": "Noida",
+      "state": "Uttar Pradesh",
+      "postalCode": "201301",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T05:53:11.036Z",
+    "itemsPrice": 374975,
+    "shippingPrice": 0,
+    "taxPrice": 67496,
+    "totalPrice": 442471,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-9243920",
+    "estimatedDelivery": "2026-07-31T05:53:11.033Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Noida, Uttar Pradesh",
+        "timestamp": "2026-07-27T05:53:11.033Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T05:53:11.036Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785132027398",
+    "id": "ord-1785132027398",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-2",
+        "title": "UltraSpeed Pro M2 Wireless Gaming Mouse",
+        "price": 4499,
+        "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-4",
+        "title": "Chronos Smart Watch Ultra Titanium Edition",
+        "price": 18999,
+        "image": "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-3",
+        "title": "VaporMax Air Kinetic Running Sneakers",
+        "price": 8999,
+        "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-5",
+        "title": "Lumina Minimalist Ergonomic Desk Lamp",
+        "price": 3499,
+        "image": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T06:00:27.398Z",
+    "itemsPrice": 50995,
+    "shippingPrice": 0,
+    "taxPrice": 9179,
+    "totalPrice": 60174,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-5768862",
+    "estimatedDelivery": "2026-07-31T06:00:27.379Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T06:00:27.379Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T06:00:27.398Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785132068031",
+    "id": "ord-1785132068031",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 16
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T06:01:08.031Z",
+    "itemsPrice": 239984,
+    "shippingPrice": 0,
+    "taxPrice": 43197,
+    "totalPrice": 283181,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-4740821",
+    "estimatedDelivery": "2026-07-31T06:01:08.028Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T06:01:08.028Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T06:01:08.031Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785132137233",
+    "id": "ord-1785132137233",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 9
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T06:02:17.233Z",
+    "itemsPrice": 134991,
+    "shippingPrice": 0,
+    "taxPrice": 24298,
+    "totalPrice": 159289,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-7805789",
+    "estimatedDelivery": "2026-07-31T06:02:17.230Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T06:02:17.230Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T06:02:17.233Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785132366408",
+    "id": "ord-1785132366408",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-2",
+        "title": "UltraSpeed Pro M2 Wireless Gaming Mouse",
+        "price": 4499,
+        "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-3",
+        "title": "VaporMax Air Kinetic Running Sneakers",
+        "price": 8999,
+        "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-4",
+        "title": "Chronos Smart Watch Ultra Titanium Edition",
+        "price": 18999,
+        "image": "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-5",
+        "title": "Lumina Minimalist Ergonomic Desk Lamp",
+        "price": 3499,
+        "image": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T06:06:06.408Z",
+    "itemsPrice": 50995,
+    "shippingPrice": 0,
+    "taxPrice": 9179,
+    "totalPrice": 60174,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-4478625",
+    "estimatedDelivery": "2026-07-31T06:06:06.389Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T06:06:06.389Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T06:06:06.408Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785132421327",
+    "id": "ord-1785132421327",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-3",
+        "title": "VaporMax Air Kinetic Running Sneakers",
+        "price": 8999,
+        "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=800",
+        "quantity": 13
+      },
+      {
+        "product": "prod-4",
+        "title": "Chronos Smart Watch Ultra Titanium Edition",
+        "price": 18999,
+        "image": "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=800",
+        "quantity": 7
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T06:07:01.327Z",
+    "itemsPrice": 249980,
+    "shippingPrice": 0,
+    "taxPrice": 44996,
+    "totalPrice": 294976,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-3665140",
+    "estimatedDelivery": "2026-07-31T06:07:01.322Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T06:07:01.322Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T06:07:01.327Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785133436159",
+    "id": "ord-1785133436159",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-2",
+        "title": "UltraSpeed Pro M2 Wireless Gaming Mouse",
+        "price": 4499,
+        "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&q=80&w=800",
+        "quantity": 17
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T06:23:56.159Z",
+    "itemsPrice": 76483,
+    "shippingPrice": 0,
+    "taxPrice": 13767,
+    "totalPrice": 90250,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-9907010",
+    "estimatedDelivery": "2026-07-31T06:23:56.157Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T06:23:56.157Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T06:23:56.159Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785133631591",
+    "id": "ord-1785133631591",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-2",
+        "title": "UltraSpeed Pro M2 Wireless Gaming Mouse",
+        "price": 4499,
+        "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&q=80&w=800",
+        "quantity": 27
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T06:27:11.591Z",
+    "itemsPrice": 121473,
+    "shippingPrice": 0,
+    "taxPrice": 21865,
+    "totalPrice": 143338,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-7230517",
+    "estimatedDelivery": "2026-07-31T06:27:11.588Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T06:27:11.588Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T06:27:11.591Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785134058551",
+    "id": "ord-1785134058551",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-2",
+        "title": "UltraSpeed Pro M2 Wireless Gaming Mouse",
+        "price": 4499,
+        "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&q=80&w=800",
+        "quantity": 18
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T06:34:18.551Z",
+    "itemsPrice": 80982,
+    "shippingPrice": 0,
+    "taxPrice": 14577,
+    "totalPrice": 95559,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-5239615",
+    "estimatedDelivery": "2026-07-31T06:34:18.536Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T06:34:18.536Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T06:34:18.551Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785134134925",
+    "id": "ord-1785134134925",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-2",
+        "title": "UltraSpeed Pro M2 Wireless Gaming Mouse",
+        "price": 4499,
+        "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&q=80&w=800",
+        "quantity": 12
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T06:35:34.925Z",
+    "itemsPrice": 53988,
+    "shippingPrice": 0,
+    "taxPrice": 9718,
+    "totalPrice": 63706,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-2129121",
+    "estimatedDelivery": "2026-07-31T06:35:34.922Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T06:35:34.922Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T06:35:34.925Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785134369251",
+    "id": "ord-1785134369251",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-2",
+        "title": "UltraSpeed Pro M2 Wireless Gaming Mouse",
+        "price": 4499,
+        "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&q=80&w=800",
+        "quantity": 2
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T06:39:29.251Z",
+    "itemsPrice": 8998,
+    "shippingPrice": 0,
+    "taxPrice": 1620,
+    "totalPrice": 10618,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-3831517",
+    "estimatedDelivery": "2026-07-31T06:39:29.249Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T06:39:29.249Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T06:39:29.252Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785134935458",
+    "id": "ord-1785134935458",
+    "user": {
+      "_id": "6a66ff0eb83f06346791ac25",
+      "name": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1784886265703",
+        "title": "Laptop Test Rawat",
+        "price": 8833,
+        "image": "https://fastly.picsum.photos/id/6/5000/3333.jpg?hmac=pq9FRpg2xkAQ7J9JTrBtyFcp9-qvlu8ycAi7bUHlL7I",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T06:48:55.458Z",
+    "itemsPrice": 8833,
+    "shippingPrice": 0,
+    "taxPrice": 1590,
+    "totalPrice": 10423,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-6248839",
+    "estimatedDelivery": "2026-07-31T06:48:55.455Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T06:48:55.455Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T06:48:55.458Z",
+    "customerName": "Test July",
+    "customerEmail": "test2@yopmail.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785135187046",
+    "id": "ord-1785135187046",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-4",
+        "title": "Chronos Smart Watch Ultra Titanium Edition",
+        "price": 18999,
+        "image": "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=800",
+        "quantity": 8
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T06:53:07.046Z",
+    "itemsPrice": 151992,
+    "shippingPrice": 0,
+    "taxPrice": 27359,
+    "totalPrice": 179351,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-5634370",
+    "estimatedDelivery": "2026-07-31T06:53:07.028Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T06:53:07.028Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T06:53:07.046Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785135380121",
+    "id": "ord-1785135380121",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-4",
+        "title": "Chronos Smart Watch Ultra Titanium Edition",
+        "price": 18999,
+        "image": "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=800",
+        "quantity": 2
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T06:56:20.121Z",
+    "itemsPrice": 37998,
+    "shippingPrice": 0,
+    "taxPrice": 6840,
+    "totalPrice": 44838,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-2466707",
+    "estimatedDelivery": "2026-07-31T06:56:20.118Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T06:56:20.118Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T06:56:20.122Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785135485187",
+    "id": "ord-1785135485187",
+    "user": {
+      "_id": "6a66ff0eb83f06346791ac25",
+      "name": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-4",
+        "title": "Chronos Smart Watch Ultra Titanium Edition",
+        "price": 18999,
+        "image": "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=800",
+        "quantity": 2
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T06:58:05.187Z",
+    "itemsPrice": 37998,
+    "shippingPrice": 0,
+    "taxPrice": 6840,
+    "totalPrice": 44838,
+    "orderStatus": "Delivered",
+    "trackingNumber": "SK-1809561",
+    "estimatedDelivery": "2026-07-31T06:58:05.183Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T06:58:05.183Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T06:58:05.187Z",
+    "customerName": "Test July",
+    "customerEmail": "test2@yopmail.com",
+    "fulfillmentStatus": "Delivered"
+  },
+  {
+    "_id": "ord-1785142979129",
+    "id": "ord-1785142979129",
+    "user": {
+      "_id": "6a671eb0fa758c335fa320a0",
+      "name": "Test Intern 2",
+      "email": "test3@yopmail.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-2",
+        "title": "UltraSpeed Pro M2 Wireless Gaming Mouse",
+        "price": 4499,
+        "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-3",
+        "title": "VaporMax Air Kinetic Running Sneakers",
+        "price": 8999,
+        "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T09:02:59.130Z",
+    "itemsPrice": 28497,
+    "shippingPrice": 0,
+    "taxPrice": 5129,
+    "totalPrice": 33626,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-7947966",
+    "estimatedDelivery": "2026-07-31T09:02:59.119Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T09:02:59.119Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T09:02:59.130Z",
+    "customerName": "Test Intern 2",
+    "customerEmail": "test3@yopmail.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785143043279",
+    "id": "ord-1785143043279",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-4",
+        "title": "Chronos Smart Watch Ultra Titanium Edition",
+        "price": 18999,
+        "image": "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=800",
+        "quantity": 8
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T09:04:03.279Z",
+    "itemsPrice": 151992,
+    "shippingPrice": 0,
+    "taxPrice": 27359,
+    "totalPrice": 179351,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-6983114",
+    "estimatedDelivery": "2026-07-31T09:04:03.275Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T09:04:03.275Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T09:04:03.279Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785143293240",
+    "id": "ord-1785143293240",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-4",
+        "title": "Chronos Smart Watch Ultra Titanium Edition",
+        "price": 18999,
+        "image": "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=800",
+        "quantity": 8
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T09:08:13.240Z",
+    "itemsPrice": 151992,
+    "shippingPrice": 0,
+    "taxPrice": 27359,
+    "totalPrice": 179351,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-3293470",
+    "estimatedDelivery": "2026-07-31T09:08:13.217Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T09:08:13.217Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T09:08:13.240Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785143473815",
+    "id": "ord-1785143473815",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-4",
+        "title": "Chronos Smart Watch Ultra Titanium Edition",
+        "price": 18999,
+        "image": "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=800",
+        "quantity": 8
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T09:11:13.815Z",
+    "itemsPrice": 151992,
+    "shippingPrice": 0,
+    "taxPrice": 27359,
+    "totalPrice": 179351,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-2924868",
+    "estimatedDelivery": "2026-07-31T09:11:13.792Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T09:11:13.792Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T09:11:13.815Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785143592075",
+    "id": "ord-1785143592075",
+    "user": {
+      "_id": "6a66ff0eb83f06346791ac25",
+      "name": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T09:13:12.075Z",
+    "itemsPrice": 14999,
+    "shippingPrice": 0,
+    "taxPrice": 2700,
+    "totalPrice": 17699,
+    "orderStatus": "Delivered",
+    "trackingNumber": "SK-4791404",
+    "estimatedDelivery": "2026-07-31T09:13:12.072Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T09:13:12.072Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T09:13:12.075Z",
+    "customerName": "Test July",
+    "customerEmail": "test2@yopmail.com",
+    "fulfillmentStatus": "Delivered"
+  },
+  {
+    "_id": "ord-1785143805253",
+    "id": "ord-1785143805253",
+    "user": {
+      "_id": "6a66ff0eb83f06346791ac25",
+      "name": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-4",
+        "title": "Chronos Smart Watch Ultra Titanium Edition",
+        "price": 18999,
+        "image": "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T09:16:45.253Z",
+    "itemsPrice": 18999,
+    "shippingPrice": 0,
+    "taxPrice": 3420,
+    "totalPrice": 22419,
+    "orderStatus": "Delivered",
+    "trackingNumber": "SK-1584094",
+    "estimatedDelivery": "2026-07-31T09:16:45.239Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T09:16:45.239Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T09:16:45.253Z",
+    "customerName": "Test July",
+    "customerEmail": "test2@yopmail.com",
+    "fulfillmentStatus": "Delivered"
+  },
+  {
+    "_id": "ord-1785144896409",
+    "id": "ord-1785144896409",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-4",
+        "title": "Chronos Smart Watch Ultra Titanium Edition",
+        "price": 18999,
+        "image": "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=800",
+        "quantity": 8
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T09:34:56.409Z",
+    "itemsPrice": 151992,
+    "shippingPrice": 0,
+    "taxPrice": 27359,
+    "totalPrice": 179351,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-7056155",
+    "estimatedDelivery": "2026-07-31T09:34:56.386Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-27T09:34:56.386Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T09:34:56.409Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785150461690",
+    "id": "ord-1785150461690",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-3",
+        "title": "VaporMax Air Kinetic Running Sneakers",
+        "price": 8999,
+        "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "100 Tech Park Way, Sector 62",
+      "city": "Noida",
+      "state": "Uttar Pradesh",
+      "postalCode": "201301",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T11:07:41.690Z",
+    "itemsPrice": 8999,
+    "shippingPrice": 0,
+    "taxPrice": 1620,
+    "totalPrice": 10619,
+    "orderStatus": "Pending",
+    "trackingNumber": "SK-9178018",
+    "estimatedDelivery": "2026-07-31T11:07:41.671Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Noida, Uttar Pradesh",
+        "timestamp": "2026-07-27T11:07:41.671Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T11:07:41.690Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Pending"
+  },
+  {
+    "_id": "ord-1785152548088",
+    "id": "ord-1785152548088",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-3",
+        "title": "VaporMax Air Kinetic Running Sneakers",
+        "price": 8999,
+        "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=800",
+        "quantity": 13
+      }
+    ],
+    "shippingAddress": {
+      "street": "100 Tech Park Way, Sector 62",
+      "city": "Noida",
+      "state": "Uttar Pradesh",
+      "postalCode": "201301",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-27T11:42:28.088Z",
+    "itemsPrice": 116987,
+    "shippingPrice": 0,
+    "taxPrice": 21058,
+    "totalPrice": 138045,
+    "orderStatus": "Delivered",
+    "trackingNumber": "SK-8911408",
+    "estimatedDelivery": "2026-07-31T11:42:28.086Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Noida, Uttar Pradesh",
+        "timestamp": "2026-07-27T11:42:28.086Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-27T11:42:28.088Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Delivered"
+  },
+  {
+    "_id": "ord-1785221073948",
+    "id": "ord-1785221073948",
+    "user": {
+      "_id": "user-admin-1",
+      "name": "ShopKart Admin",
+      "email": "admin@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-3",
+        "title": "VaporMax Air Kinetic Running Sneakers",
+        "price": 8999,
+        "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "100 Tech Park Way, Sector 62",
+      "city": "Noida",
+      "state": "Uttar Pradesh",
+      "postalCode": "201301",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-28T06:44:33.948Z",
+    "itemsPrice": 8999,
+    "shippingPrice": 0,
+    "taxPrice": 1620,
+    "totalPrice": 10619,
+    "orderStatus": "Refunded",
+    "trackingNumber": "SK-1896589",
+    "estimatedDelivery": "2026-08-01T06:44:33.931Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Noida, Uttar Pradesh",
+        "timestamp": "2026-07-28T06:44:33.931Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-28T06:44:33.948Z",
+    "customerName": "ShopKart Admin",
+    "customerEmail": "admin@shopkart.com",
+    "fulfillmentStatus": "Refunded",
+    "paymentStatus": "Refunded"
+  },
+  {
+    "_id": "ord-1785224835645",
+    "id": "ord-1785224835645",
+    "user": {
+      "id": "6a66ff0eb83f06346791ac25",
+      "_id": "6a66ff0eb83f06346791ac25",
+      "name": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 7
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India",
+      "fullName": "Test July",
+      "email": "test2@yopmail.com"
+    },
+    "paymentMethod": "Stripe",
+    "isPaid": true,
+    "paidAt": "2026-07-28T07:47:15.645Z",
+    "itemsPrice": 104993,
+    "shippingPrice": 0,
+    "taxPrice": 18899,
+    "totalPrice": 123892,
+    "orderStatus": "Delivered",
+    "trackingNumber": "SK-2942131",
+    "estimatedDelivery": "2026-08-01T07:47:15.625Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, Karnataka",
+        "timestamp": "2026-07-28T07:47:15.625Z",
+        "note": "Order confirmed and registered in ShopKart system"
+      }
+    ],
+    "createdAt": "2026-07-28T07:47:15.645Z",
+    "customerName": "Test July",
+    "customerEmail": "test2@yopmail.com",
+    "fulfillmentStatus": "Delivered"
+  },
+  {
+    "_id": "ord-1001",
+    "id": "ord-1001",
+    "user": {
+      "_id": "user-customer-1",
+      "name": "Aryan Sharma",
+      "email": "customer@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-1",
+        "title": "Aura Studio Wireless Noise-Canceling Headphones",
+        "price": 14999,
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "paymentResult": {
+      "id": "pi_test_1001",
+      "status": "succeeded"
+    },
+    "isPaid": true,
+    "paidAt": "2026-07-24T08:15:58.403Z",
+    "itemsPrice": 14999,
+    "taxPrice": 1500,
+    "shippingPrice": 0,
+    "totalPrice": 16499,
+    "orderStatus": "Delivered",
+    "trackingNumber": "SK-IND-8947291",
+    "estimatedDelivery": "2026-07-27T08:15:58.403Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, KA",
+        "timestamp": "2026-07-24T08:15:58.403Z",
+        "note": "Order confirmed and payment verified via Stripe"
+      },
+      {
+        "status": "Processing",
+        "location": "ShopKart Fulfillment Hub, Noida",
+        "timestamp": "2026-07-25T08:15:58.403Z",
+        "note": "Item packed and quality inspected"
+      },
+      {
+        "status": "Shipped",
+        "location": "BlueDart Logistics Hub, Delhi",
+        "timestamp": "2026-07-26T08:15:58.403Z",
+        "note": "In transit to destination city"
+      },
+      {
+        "status": "Delivered",
+        "location": "Bengaluru, KA",
+        "timestamp": "2026-07-27T08:15:58.403Z",
+        "note": "Delivered to customer"
+      }
+    ],
+    "createdAt": "2026-07-24T08:15:58.403Z"
+  },
+  {
+    "_id": "ord-1002",
+    "id": "ord-1002",
+    "user": {
+      "_id": "user-customer-2",
+      "name": "Priya Patel",
+      "email": "priya.patel@gmail.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-3",
+        "title": "VaporMax Air Kinetic Running Sneakers",
+        "price": 8999,
+        "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "15 Bandra Kurla Complex",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "postalCode": "400051",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "paymentResult": {
+      "id": "pi_test_1002",
+      "status": "succeeded"
+    },
+    "isPaid": true,
+    "paidAt": "2026-07-26T08:15:58.403Z",
+    "itemsPrice": 8999,
+    "taxPrice": 900,
+    "shippingPrice": 0,
+    "totalPrice": 9899,
+    "orderStatus": "Out for Delivery",
+    "trackingNumber": "SK-IND-9921402",
+    "estimatedDelivery": "2026-07-29T08:15:58.403Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Mumbai, MH",
+        "timestamp": "2026-07-26T08:15:58.403Z",
+        "note": "Payment verified via Stripe"
+      },
+      {
+        "status": "Shipped",
+        "location": "Delhi Logistics Center",
+        "timestamp": "2026-07-27T08:15:58.403Z",
+        "note": "Arrived at Mumbai hub"
+      },
+      {
+        "status": "Out for Delivery",
+        "location": "Mumbai Central",
+        "timestamp": "2026-07-28T08:15:58.403Z",
+        "note": "Out for delivery with BlueDart rider"
+      }
+    ],
+    "createdAt": "2026-07-26T08:15:58.403Z"
+  },
+  {
+    "_id": "ord-1003",
+    "id": "ord-1003",
+    "user": {
+      "_id": "user-customer-3",
+      "name": "Vikram Malhotra",
+      "email": "vikram.m@yahoo.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-4",
+        "title": "Chronos Smart Watch Ultra Titanium Edition",
+        "price": 18999,
+        "image": "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      },
+      {
+        "product": "prod-2",
+        "title": "UltraSpeed Pro M2 Wireless Gaming Mouse",
+        "price": 4499,
+        "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "88 Cyber City",
+      "city": "Gurugram",
+      "state": "Haryana",
+      "postalCode": "122002",
+      "country": "India"
+    },
+    "paymentMethod": "Stripe",
+    "paymentResult": {
+      "id": "pi_test_1003",
+      "status": "succeeded"
+    },
+    "isPaid": true,
+    "paidAt": "2026-07-27T08:15:58.403Z",
+    "itemsPrice": 23498,
+    "taxPrice": 2349,
+    "shippingPrice": 0,
+    "totalPrice": 25847,
+    "orderStatus": "Shipped",
+    "trackingNumber": "SK-IND-4401823",
+    "estimatedDelivery": "2026-07-30T08:15:58.403Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Gurugram, HR",
+        "timestamp": "2026-07-27T08:15:58.403Z",
+        "note": "Order confirmed"
+      },
+      {
+        "status": "Shipped",
+        "location": "Noida Fulfillment Center",
+        "timestamp": "2026-07-28T08:15:58.403Z",
+        "note": "Package handed over to BlueDart"
+      }
+    ],
+    "createdAt": "2026-07-27T08:15:58.403Z"
+  },
+  {
+    "_id": "ord-1004",
+    "id": "ord-1004",
+    "user": {
+      "_id": "user-customer-1",
+      "name": "Aryan Sharma",
+      "email": "customer@shopkart.com"
+    },
+    "orderItems": [
+      {
+        "product": "prod-5",
+        "title": "Lumina Minimalist Ergonomic Desk Lamp",
+        "price": 3499,
+        "image": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&q=80&w=800",
+        "quantity": 1
+      }
+    ],
+    "shippingAddress": {
+      "street": "42 MG Road, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "postalCode": "560038",
+      "country": "India"
+    },
+    "paymentMethod": "COD",
+    "isPaid": false,
+    "itemsPrice": 3499,
+    "taxPrice": 349,
+    "shippingPrice": 0,
+    "totalPrice": 3848,
+    "orderStatus": "Cancelled",
+    "trackingNumber": "SK-IND-7718290",
+    "estimatedDelivery": "2026-07-31T08:15:58.403Z",
+    "trackingHistory": [
+      {
+        "status": "Order Placed",
+        "location": "Bengaluru, KA",
+        "timestamp": "2026-07-27T20:15:58.403Z",
+        "note": "COD Order placed successfully"
+      },
+      {
+        "status": "Cancelled",
+        "location": "ShopKart Regional Distribution Hub",
+        "timestamp": "2026-07-28T09:39:20.821Z",
+        "note": "Status updated to Cancelled by Admin"
+      }
+    ],
+    "createdAt": "2026-07-27T20:15:58.403Z",
+    "fulfillmentStatus": "Cancelled"
+  }
+]

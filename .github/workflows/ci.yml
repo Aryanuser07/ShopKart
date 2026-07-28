@@ -1,0 +1,40 @@
+name: ShopKart CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: 'npm'
+          cache-dependency-path: |
+            client/package-lock.json
+            server/package-lock.json
+
+      - name: Install Client Dependencies & Verify Build
+        run: |
+          cd client
+          npm ci
+          npm run build
+
+      - name: Install Server Dependencies & Build
+        run: |
+          cd server
+          npm ci
+          npm run build
+
+      - name: Verify Docker Compose Build
+        run: |
+          docker compose config
