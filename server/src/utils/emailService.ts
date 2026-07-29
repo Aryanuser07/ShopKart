@@ -68,7 +68,7 @@ export const resolveValidEmail = (email?: string): string => {
 export const sendOTPEmail = async (toEmail: string, otp: string, name?: string) => {
   const targetEmail = resolveValidEmail(toEmail);
   const recipientName = name || targetEmail.split('@')[0];
-  const subject = `🔐 Your ShopKart Verification Code: ${otp}`;
+  const subject = `Your ShopKart Verification Code: ${otp}`;
   const html = `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px; background-color: #faf9f6; border-radius: 24px; border: 1px solid #e2e8f0;">
       <div style="text-align: center; margin-bottom: 24px;">
@@ -86,7 +86,7 @@ export const sendOTPEmail = async (toEmail: string, otp: string, name?: string) 
           </span>
         </div>
 
-        <p style="color: #64748b; font-size: 12px; text-align: center; margin-bottom: 0;">⏱️ This code is valid for <strong>5 minutes</strong>.</p>
+        <p style="color: #64748b; font-size: 12px; text-align: center; margin-bottom: 0;">This code is valid for <strong>5 minutes</strong>.</p>
       </div>
     </div>
   `;

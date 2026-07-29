@@ -66,7 +66,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       setOtpPurpose('signup');
       setStep('otp');
       setCooldown(30);
-      setSuccessMsg(`🔐 6-digit verification code sent to ${email}. Please check your email inbox.`);
+      setSuccessMsg(`6-digit verification code sent to ${email}. Please check your email inbox.`);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to request signup OTP. Check details.');
     } finally {
@@ -88,7 +88,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       setOtpPurpose('login');
       setStep('otp');
       setCooldown(30);
-      setSuccessMsg(`🔐 6-digit login code sent to ${email}. Please check your email inbox.`);
+      setSuccessMsg(`6-digit login code sent to ${email}. Please check your email inbox.`);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to send OTP code. Please check email address.');
     } finally {
@@ -251,14 +251,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
                 {error && (
                   <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs font-bold rounded-xl flex items-center space-x-2">
-                    <span>⚠️</span>
                     <span>{error}</span>
                   </div>
                 )}
 
                 {successMsg && (
                   <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold rounded-xl flex items-center space-x-2">
-                    <span>📧</span>
                     <span>{successMsg}</span>
                   </div>
                 )}

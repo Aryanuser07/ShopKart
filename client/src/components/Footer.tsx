@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, CheckCircle2 } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import MatrixText from './MatrixText';
 
 export const Footer: React.FC = () => {
   const { user } = useAuth();
@@ -13,7 +14,7 @@ export const Footer: React.FC = () => {
     if (!email || !email.includes('@')) return;
     setIsSubscribed(true);
     setEmail('');
-    setTimeout(() => setIsSubscribed(false), 5000);
+    setTimeout(() => setIsSubscribed(false), 6000);
   };
 
   return (
@@ -65,9 +66,9 @@ export const Footer: React.FC = () => {
             <p className="text-xs text-slate-600 font-medium">Get product releases and exclusive promo codes.</p>
             
             {isSubscribed ? (
-              <div className="flex items-center space-x-2 bg-emerald-50 border border-emerald-200 text-emerald-800 p-2.5 rounded-xl text-xs font-bold">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>✅ Subscribed successfully! Promo code sent to your email.</span>
+              <div className="bg-amber-50/80 border border-amber-200 p-3 rounded-xl shadow-xs">
+                <MatrixText text="SUBSCRIBED" className="min-h-0 text-[#242b27]" />
+                <p className="text-[11px] font-bold text-slate-600 mt-1">Promo code dispatched to your inbox.</p>
               </div>
             ) : (
               <form onSubmit={handleNewsletterSubmit} className="flex items-center space-x-2">
