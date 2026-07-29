@@ -9,8 +9,10 @@ const sendViaResend = async (toEmail: string, subject: string, html: string): Pr
   const apiKey = (process.env.RESEND_API_KEY || RESEND_API_KEY).trim();
   if (!apiKey) return false;
 
-  try {
-    const res = await fetch('https://api.resend.com/emails', {
+  const adminEmail = (process.env.EMAIL_USER || process.env.SMTP_USER || 'rawataryan55@gmail.com').trim().toLowerCase();
+
+  const attemptSend = async (recipient: string) => {
+    return await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
@@ -18,20 +20,36 @@ const sendViaResend = async (toEmail: string, subject: string, html: string): Pr
       },
       body: JSON.stringify({
         from: 'ShopKart <onboarding@resend.dev>',
-        to: [toEmail],
+        to: [recipient],
         subject,
         html
       })
     });
+  };
+
+  try {
+    let res = await attemptSend(toEmail);
 
     if (res.ok) {
       const data: any = await res.json();
       console.log(`✅ [RESEND HTTP SUCCESS] Real email sent to ${toEmail} | ID: ${data?.id}`);
       return true;
-    } else {
-      const errData: any = await res.json().catch(() => ({}));
-      console.error(`⚠️ [RESEND API WARNING]: ${errData.message || res.statusText}`);
     }
+
+    const errData: any = await res.json().catch(() => ({}));
+
+    // If Resend free tier limits sending only to account owner (rawataryan55@gmail.com), auto-redirect to owner email
+    if (errData.message?.includes('testing emails to your own email address') && toEmail !== adminEmail) {
+      console.log(`ℹ️ [RESEND FREE TIER] Redirecting email for ${toEmail} to registered owner address (${adminEmail})...`);
+      let retryRes = await attemptSend(adminEmail);
+      if (retryRes.ok) {
+        const retryData: any = await retryRes.json();
+        console.log(`✅ [RESEND HTTP SUCCESS] Email delivered to owner inbox (${adminEmail}) | ID: ${retryData?.id}`);
+        return true;
+      }
+    }
+
+    console.error(`⚠️ [RESEND API WARNING]: ${errData.message || res.statusText}`);
   } catch (err: any) {
     console.error(`⚠️ [RESEND API WARNING]: ${err.message}`);
   }
