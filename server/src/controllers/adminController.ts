@@ -234,12 +234,13 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
     try {
       const dbUsers = await User.find().select('-password').sort({ createdAt: -1 });
       if (dbUsers && dbUsers.length > 0) {
-        users = dbUsers.map(u => ({
+        users = dbUsers.map((u: any) => ({
           id: String(u._id),
           _id: String(u._id),
           name: u.name,
           email: u.email,
           role: u.role,
+          plan: u.plan || 'Starter',
           avatar: u.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=random`,
           phone: u.phone || '',
           createdAt: u.createdAt
@@ -256,6 +257,7 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
         name: u.name,
         email: u.email,
         role: u.role,
+        plan: (u as any).plan || 'Starter',
         avatar: u.avatar,
         phone: u.phone,
         createdAt: u.createdAt
@@ -270,7 +272,7 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
 
 export const createCustomer = async (req: AuthRequest, res: Response) => {
   try {
-    const { name, email, role, phone } = req.body;
+    const { name, email, role, plan, phone } = req.body;
     if (!name || !email) {
       return res.status(400).json({ message: 'Name and email are required' });
     }
@@ -293,6 +295,7 @@ export const createCustomer = async (req: AuthRequest, res: Response) => {
       email: email.toLowerCase(),
       password: hashedPassword,
       role: role || 'customer',
+      plan: plan || 'Starter',
       avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
       phone: phone || '+91 98765 43210'
     });
@@ -304,6 +307,7 @@ export const createCustomer = async (req: AuthRequest, res: Response) => {
       name: dbUser.name,
       email: dbUser.email,
       role: dbUser.role,
+      plan: dbUser.plan || 'Starter',
       avatar: dbUser.avatar,
       phone: dbUser.phone,
       createdAt: dbUser.createdAt

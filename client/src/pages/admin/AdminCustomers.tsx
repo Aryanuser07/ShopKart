@@ -46,10 +46,10 @@ export const AdminCustomers: React.FC = () => {
     try {
       const res = await api.get('/admin/users');
       if (res.data.users && Array.isArray(res.data.users)) {
-        const apiUsers: CustomerRow[] = res.data.users.map((u: any, idx: number) => ({
+        const apiUsers: CustomerRow[] = res.data.users.map((u: any) => ({
           name: u.name || 'Customer',
           email: u.email || 'user@shopkart.com',
-          plan: idx % 3 === 0 ? 'Enterprise' : idx % 2 === 0 ? 'Team' : 'Starter',
+          plan: u.plan || 'Starter',
           status: u.role === 'admin' ? 'active' : 'active',
           joined: new Date(u.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
         }));
@@ -129,6 +129,7 @@ export const AdminCustomers: React.FC = () => {
       const res = await api.post('/admin/users', {
         name: newName,
         email: newEmail,
+        plan: newPlan,
         role: 'customer'
       });
 
