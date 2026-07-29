@@ -46,13 +46,40 @@ export const AdminCustomers: React.FC = () => {
     try {
       const res = await api.get('/admin/users');
       if (res.data.users && Array.isArray(res.data.users)) {
-        const apiUsers: CustomerRow[] = res.data.users.map((u: any) => ({
-          name: u.name || 'Customer',
-          email: u.email || 'user@shopkart.com',
-          plan: u.plan || 'Starter',
-          status: u.role === 'admin' ? 'active' : 'active',
-          joined: new Date(u.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-        }));
+        let localOrders: any[] = [];
+        try {
+          localOrders = JSON.parse(localStorage.getItem('shopkart-custom-orders') || '[]');
+        } catch (e) {
+          localOrders = [];
+        }
+
+        const apiUsers: CustomerRow[] = res.data.users.map((u: any) => {
+          const uEmail = (u.email || '').toLowerCase().trim();
+          const uName = (u.name || '').toLowerCase().trim();
+
+          const userLocalOrders = localOrders.filter((o: any) => {
+            const oEmail = (o.customerEmail || o.shippingAddress?.email || o.user?.email || '').toLowerCase().trim();
+            const oName = (o.customerName || o.shippingAddress?.fullName || o.user?.name || '').toLowerCase().trim();
+            const st = (o.orderStatus || o.status || '').toLowerCase();
+            const isNotCancelled = st !== 'refunded' && st !== 'cancelled';
+            return isNotCancelled && ((uEmail && oEmail === uEmail) || (uName && oName === uName));
+          });
+
+          const localSpent = userLocalOrders.reduce((sum, o: any) => sum + Number(o.totalPrice || o.amount || 0), 0);
+          const totalSpent = Number(u.totalSpent || 0) + localSpent;
+
+          let computedPlan = u.plan && u.plan !== 'Starter' ? u.plan : 'Starter';
+          if (totalSpent >= 50000) computedPlan = 'Enterprise';
+          else if (totalSpent >= 10000) computedPlan = 'Team';
+
+          return {
+            name: u.name || 'Customer',
+            email: u.email || 'user@shopkart.com',
+            plan: computedPlan,
+            status: u.role === 'admin' ? 'active' : 'active',
+            joined: new Date(u.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          };
+        });
         setCustomers(apiUsers);
       }
     } catch (err) {

@@ -238,13 +238,22 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
       if (dbUsers && dbUsers.length > 0) {
         users = dbUsers.map((u: any) => {
           // Calculate total order spending for this user
-          const uId = String(u._id);
-          const uEmail = (u.email || '').toLowerCase();
+          const uId = String(u._id).toLowerCase();
+          const uEmail = (u.email || '').toLowerCase().trim();
+          const uName = (u.name || '').toLowerCase().trim();
 
           const userOrders = orders.filter((o: any) => {
-            const oUserId = String(o.user?._id || o.user || '');
-            const oEmail = (o.customerEmail || o.shippingAddress?.email || '').toLowerCase();
-            return oUserId === uId || (uEmail && oEmail === uEmail);
+            const oUserId = String(o.user?._id || o.user?.id || o.user || '').toLowerCase();
+            const oEmail = (o.customerEmail || o.shippingAddress?.email || o.user?.email || '').toLowerCase().trim();
+            const oName = (o.customerName || o.shippingAddress?.fullName || o.user?.name || '').toLowerCase().trim();
+            const st = (o.orderStatus || o.fulfillmentStatus || '').toLowerCase();
+            const isNotCancelled = st !== 'refunded' && st !== 'cancelled';
+
+            return isNotCancelled && (
+              (uId && oUserId === uId) ||
+              (uEmail && oEmail === uEmail) ||
+              (uName && oName === uName)
+            );
           });
 
           const totalSpent = userOrders.reduce((sum, o: any) => sum + Number(o.totalPrice || 0), 0);
@@ -252,6 +261,7 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
           let dynamicPlan = 'Starter';
           if (totalSpent >= 50000) dynamicPlan = 'Enterprise';
           else if (totalSpent >= 10000) dynamicPlan = 'Team';
+          else if (u.plan && u.plan !== 'Starter') dynamicPlan = u.plan;
 
           return {
             id: String(u._id),
@@ -259,7 +269,8 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
             name: u.name,
             email: u.email,
             role: u.role,
-            plan: u.plan || dynamicPlan,
+            plan: dynamicPlan,
+            totalSpent,
             avatar: u.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=random`,
             phone: u.phone || '',
             createdAt: u.createdAt
