@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # MongoDB Database Container
   mongodb:
@@ -26,6 +24,7 @@ services:
       NODE_ENV: production
       PORT: 5000
       MONGO_URI: mongodb://mongodb:27017/shopkart
+      MONGODB_URI: mongodb://mongodb:27017/shopkart
       JWT_SECRET: shopkart_production_jwt_secret_key_2026
       JWT_REFRESH_SECRET: shopkart_production_refresh_secret_key_2026
       ADMIN_EMAIL: admin@shopkart.com
