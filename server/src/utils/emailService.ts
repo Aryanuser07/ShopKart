@@ -1,11 +1,12 @@
-import nodemailer from 'nodemailer';
-
 /**
- * Send email using Brevo (Sendinblue) REST API v3 (100% Dedicated Brevo Integration)
+ * Send email using Brevo (Sendinblue) REST API v3 (100% Pure HTTP API via fetch)
  */
 const sendViaBrevo = async (toEmail: string, subject: string, html: string): Promise<boolean> => {
   const apiKey = (process.env.BREVO_API_KEY || '').trim();
-  if (!apiKey) return false;
+  if (!apiKey) {
+    console.warn('⚠️ [BREVO HTTP API]: BREVO_API_KEY environment variable is missing.');
+    return false;
+  }
 
   const senderEmail = (process.env.MAIL_FROM || process.env.EMAIL_USER || process.env.SMTP_USER || 'shopkartdev01@gmail.com').trim().toLowerCase();
   const senderName = (process.env.MAIL_FROM_NAME || 'ShopKart').trim();
@@ -33,16 +34,17 @@ const sendViaBrevo = async (toEmail: string, subject: string, html: string): Pro
       })
     });
 
+    const responseStatus = res.status;
+    const data: any = await res.json().catch(() => ({}));
+
     if (res.ok) {
-      const data: any = await res.json();
-      console.log(`✅ [BREVO HTTP SUCCESS] Real email delivered to ${toEmail} | Message ID: ${data?.messageId}`);
+      console.log(`✅ [BREVO HTTP SUCCESS] (Status: ${responseStatus}) Real email delivered to ${toEmail} | Response Body:`, JSON.stringify(data));
       return true;
     } else {
-      const errData: any = await res.json().catch(() => ({}));
-      console.error(`⚠️ [BREVO API WARNING]: ${errData.message || res.statusText}`);
+      console.error(`⚠️ [BREVO HTTP API FAILURE] (Status: ${responseStatus}) | Error Response Body:`, JSON.stringify(data));
     }
   } catch (err: any) {
-    console.error(`⚠️ [BREVO NETWORK ERROR]: ${err.message}`);
+    console.error(`⚠️ [BREVO HTTP NETWORK ERROR]: ${err.message}`);
   }
   return false;
 };
@@ -89,7 +91,7 @@ export const sendOTPEmail = async (toEmail: string, otp: string, name?: string) 
     </div>
   `;
 
-  // 100% Brevo HTTP API
+  // 100% Pure Brevo HTTP API
   const brevoSuccess = await sendViaBrevo(targetEmail, subject, html);
   if (brevoSuccess) return;
 
