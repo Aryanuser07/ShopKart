@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import Stripe from 'stripe';
 import mongoose from 'mongoose';
 import { Order } from '../models/Order';
@@ -10,17 +10,46 @@ import { sendOrderConfirmationEmail } from '../utils/emailService';
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const stripe = stripeSecretKey ? new Stripe(stripeSecretKey, { apiVersion: '2023-10-16' }) : null;
 
+// Helper to format order output for API contract compatibility
+const formatOrder = (doc: any) => {
+  if (!doc) return null;
+  const o = typeof doc.toObject === 'function' ? doc.toObject() : doc;
+  const idStr = String(o._id || o.id || '');
+  const uObj = typeof o.user === 'object' && o.user !== null ? o.user : {};
+  const custName = o.customerName || uObj.name || o.shippingAddress?.fullName || 'ShopKart Customer';
+  const custEmail = o.customerEmail || uObj.email || o.shippingAddress?.email || '';
+
+  return {
+    ...o,
+    _id: idStr,
+    id: idStr,
+    user: {
+      _id: String(uObj._id || uObj.id || o.user || 'user-customer-1'),
+      id: String(uObj.id || uObj._id || o.user || 'user-customer-1'),
+      name: custName,
+      email: custEmail
+    },
+    customerName: custName,
+    customerEmail: custEmail,
+    orderStatus: o.orderStatus || o.fulfillmentStatus || 'Pending',
+    fulfillmentStatus: o.fulfillmentStatus || o.orderStatus || 'Pending',
+    paymentStatus: o.paymentStatus || (o.isPaid ? 'Paid' : 'Pending'),
+    createdAt: o.createdAt ? new Date(o.createdAt).toISOString() : new Date().toISOString()
+  };
+};
+
 export const createOrder = async (req: AuthRequest, res: Response) => {
   try {
     const { orderItems, shippingAddress, paymentMethod = 'Stripe', customerUser } = req.body;
     const reqUser = req.user;
 
     const user = {
-      id: customerUser?.id || customerUser?._id || reqUser?.id || reqUser?._id || 'user-guest',
-      _id: customerUser?._id || customerUser?.id || reqUser?._id || reqUser?.id || 'user-guest',
+      id: customerUser?.id || customerUser?._id || reqUser?.id || reqUser?._id || 'user-customer-1',
+      _id: customerUser?._id || customerUser?.id || reqUser?._id || reqUser?.id || 'user-customer-1',
       name: customerUser?.name || reqUser?.name || shippingAddress?.fullName || 'ShopKart Customer',
       email: customerUser?.email || reqUser?.email || shippingAddress?.email || ''
     };
+
     if (!orderItems || orderItems.length === 0) {
       return res.status(400).json({ message: 'No order items specified' });
     }
@@ -28,160 +57,132 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ message: 'Valid shipping address is required' });
     }
 
-    // Validate stock limits for each item
+    // Validate stock limits for each item in DB / memoryStore
     for (const item of orderItems) {
       const pId = String(item.product?._id || item.product?.id || item.product || '');
       const pTitle = (item.title || item.product?.title || '').trim();
       const qty = Number(item.quantity) || 1;
 
-      const memProd = memoryStore.products.find(
-        p => p._id === pId || p.id === pId || (p.title && p.title.toLowerCase().includes(pTitle.toLowerCase())) || (pTitle && pTitle.toLowerCase().includes(p.title.toLowerCase()))
-      );
+      let availStock: number | null = null;
 
-      if (memProd && qty > memProd.stock) {
+      // Check DB first if valid ObjectId
+      if (mongoose.Types.ObjectId.isValid(pId)) {
+        const dbProd = await Product.findById(pId);
+        if (dbProd) {
+          availStock = dbProd.stock;
+        }
+      }
+
+      // Fallback to memoryStore product catalog
+      if (availStock === null) {
+        const memProd = memoryStore.products.find(
+          p => p._id === pId || p.id === pId || (p.title && p.title.toLowerCase().includes(pTitle.toLowerCase())) || (pTitle && pTitle.toLowerCase().includes(p.title.toLowerCase()))
+        );
+        if (memProd) {
+          availStock = memProd.stock;
+        }
+      }
+
+      if (availStock !== null && qty > availStock) {
         return res.status(400).json({
-          message: `Cannot purchase ${qty} units of "${memProd.title}". Only ${memProd.stock} units available in stock!`
+          message: `Cannot purchase ${qty} units of "${pTitle || 'item'}". Only ${availStock} units available in stock!`
         });
       }
     }
 
     const itemsPrice = orderItems.reduce((acc: number, item: any) => acc + item.price * item.quantity, 0);
     const shippingPrice = itemsPrice > 5000 ? 0 : 499;
-    const taxPrice = Math.round(itemsPrice * 0.18); // 18% GST/Tax
+    const taxPrice = Math.round(itemsPrice * 0.18);
     const totalPrice = itemsPrice + shippingPrice + taxPrice;
 
     const trackingNumber = 'SK-' + Math.floor(1000000 + Math.random() * 9000000);
-    const estimatedDelivery = new Date(Date.now() + 86400000 * 4).toISOString();
+    const estimatedDelivery = new Date(Date.now() + 86400000 * 4);
 
     const initialTrackingEvent = {
       status: 'Order Placed',
       location: `${shippingAddress.city}, ${shippingAddress.state || 'IN'}`,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(),
       note: 'Order confirmed and registered in ShopKart system'
     };
 
-    // Try MongoDB
-    try {
-      if (mongoose.connection.readyState !== 1) {
-        throw new Error('MongoDB not connected, falling back to memoryStore');
-      }
-      const order = await Order.create({
-        user: user.id || user._id,
-        orderItems,
-        shippingAddress: {
-          ...shippingAddress,
-          fullName: user.name || shippingAddress.fullName || 'ShopKart Customer',
-          email: user.email || shippingAddress.email || ''
-        },
-        paymentMethod,
-        isPaid: paymentMethod === 'TestMode' || paymentMethod === 'Stripe',
-        paidAt: paymentMethod === 'TestMode' || paymentMethod === 'Stripe' ? new Date() : undefined,
-        itemsPrice,
-        shippingPrice,
-        taxPrice,
-        totalPrice,
-        orderStatus: paymentMethod === 'Stripe' ? 'Processing' : 'Order Placed',
-        trackingNumber,
-        estimatedDelivery,
-        trackingHistory: [initialTrackingEvent]
-      });
+    const isPaid = paymentMethod === 'TestMode' || paymentMethod === 'Stripe';
 
-      const populatedOrder = {
-        ...order.toObject(),
-        _id: String(order._id),
-        id: String(order._id),
-        paidAt: order.paidAt ? order.paidAt.toISOString() : undefined,
-        user: {
-          _id: String(user.id || user._id),
-          id: String(user.id || user._id),
-          name: user.name,
-          email: user.email
-        },
-        customerName: user.name,
-        customerEmail: user.email
-      } as any;
+    const mongoUserId = mongoose.Types.ObjectId.isValid(String(user.id || user._id))
+      ? user.id || user._id
+      : new mongoose.Types.ObjectId();
 
-      // Add to memoryStore for cross-session consistency
-      memoryStore.orders.unshift(populatedOrder as any);
-      memoryStore.saveOrders();
+    const formattedOrderItems = orderItems.map((item: any) => {
+      const pIdStr = String(item.product?._id || item.product?.id || item.product || '');
+      return {
+        ...item,
+        product: mongoose.Types.ObjectId.isValid(pIdStr)
+          ? pIdStr
+          : new mongoose.Types.ObjectId()
+      };
+    });
 
-      // Deduct stock for each ordered item
-      orderItems.forEach(async (item: any) => {
-        const pId = String(item.product?._id || item.product?.id || item.product || '');
-        const pTitle = (item.title || '').toLowerCase();
-        const qty = Number(item.quantity) || 1;
+    const orderDoc = await Order.create({
+      user: mongoUserId,
+      customerName: user.name,
+      customerEmail: user.email,
+      orderItems: formattedOrderItems,
+      shippingAddress: {
+        ...shippingAddress,
+        fullName: user.name,
+        email: user.email
+      },
+      paymentMethod,
+      isPaid,
+      paidAt: isPaid ? new Date() : undefined,
+      itemsPrice,
+      shippingPrice,
+      taxPrice,
+      totalPrice,
+      orderStatus: paymentMethod === 'Stripe' ? 'Processing' : 'Pending',
+      fulfillmentStatus: paymentMethod === 'Stripe' ? 'Processing' : 'Pending',
+      paymentStatus: isPaid ? 'Paid' : 'Pending',
+      trackingNumber,
+      estimatedDelivery,
+      trackingHistory: [initialTrackingEvent]
+    });
 
-        // Deduct in memoryStore
-        const memProd = memoryStore.products.find(p => p._id === pId || p.id === pId || p.title.toLowerCase().includes(pTitle) || (pTitle && pTitle.includes(p.title.toLowerCase())));
-        if (memProd) {
-          memProd.stock = Math.max(0, memProd.stock - qty);
-        }
+    // Deduct stock for each ordered item in DB and memoryStore
+    for (const item of orderItems) {
+      const pId = String(item.product?._id || item.product?.id || item.product || '');
+      const pTitle = (item.title || '').toLowerCase();
+      const qty = Number(item.quantity) || 1;
 
-        // Deduct in MongoDB
+      // Update in DB
+      if (mongoose.Types.ObjectId.isValid(pId)) {
         try {
-          if (mongoose.Types.ObjectId.isValid(pId)) {
-            const dbProd = await Product.findById(pId);
-            if (dbProd) {
-              dbProd.stock = Math.max(0, dbProd.stock - qty);
-              await dbProd.save();
-            }
+          const dbProd = await Product.findById(pId);
+          if (dbProd) {
+            dbProd.stock = Math.max(0, dbProd.stock - qty);
+            await dbProd.save();
           }
         } catch (e) {
-          // Fallback
+          // Ignore
         }
-      });
-
-      return res.status(201).json({ order: populatedOrder });
-    } catch (dbErr) {
-      // Memory Store fallback
-      const newOrder = {
-        _id: 'ord-' + Date.now(),
-        id: 'ord-' + Date.now(),
-        user: {
-          _id: user.id || user._id,
-          name: user.name,
-          email: user.email
-        },
-        orderItems,
-        shippingAddress,
-        paymentMethod,
-        paymentResult: paymentMethod === 'TestMode' ? { id: 'pi_test_' + Date.now(), status: 'succeeded' } : undefined,
-        isPaid: true,
-        paidAt: new Date().toISOString(),
-        itemsPrice,
-        shippingPrice,
-        taxPrice,
-        totalPrice,
-        orderStatus: 'Pending' as const,
-        trackingNumber,
-        estimatedDelivery,
-        trackingHistory: [initialTrackingEvent],
-        createdAt: new Date().toISOString()
-      };
-
-      memoryStore.orders.unshift(newOrder);
-      memoryStore.saveOrders();
-
-      // Deduct stock for each item in memoryStore
-      orderItems.forEach((item: any) => {
-        const pId = String(item.product?._id || item.product?.id || item.product || '');
-        const pTitle = (item.title || '').toLowerCase();
-        const qty = Number(item.quantity) || 1;
-
-        const memProd = memoryStore.products.find(p => p._id === pId || p.id === pId || p.title.toLowerCase().includes(pTitle) || (pTitle && pTitle.includes(p.title.toLowerCase())));
-        if (memProd) {
-          memProd.stock = Math.max(0, memProd.stock - qty);
-        }
-      });
-
-      // Send order receipt email via SMTP / sandbox
-      const recipientEmail = user.email || shippingAddress?.email;
-      if (recipientEmail) {
-        sendOrderConfirmationEmail(recipientEmail, newOrder);
       }
 
-      return res.status(201).json({ order: newOrder });
+      // Update in memoryStore products array
+      const memProd = memoryStore.products.find(
+        p => p._id === pId || p.id === pId || (p.title && p.title.toLowerCase().includes(pTitle))
+      );
+      if (memProd) {
+        memProd.stock = Math.max(0, memProd.stock - qty);
+      }
     }
+
+    const formattedOrder = formatOrder(orderDoc);
+
+    // Send confirmation email
+    const recipientEmail = user.email || shippingAddress?.email;
+    if (recipientEmail) {
+      sendOrderConfirmationEmail(recipientEmail, formattedOrder);
+    }
+
+    return res.status(201).json({ order: formattedOrder });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }
@@ -191,15 +192,7 @@ export const createCheckoutSession = async (req: AuthRequest, res: Response) => 
   try {
     const { orderId } = req.body;
 
-    let order = memoryStore.orders.find(o => o._id === orderId || o.id === orderId);
-
-    if (!order) {
-      try {
-        order = await Order.findById(orderId) as any;
-      } catch (err) {
-        // Continue
-      }
-    }
+    let order = await findOrderByIdOrNumber(orderId);
 
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
@@ -222,36 +215,42 @@ export const createCheckoutSession = async (req: AuthRequest, res: Response) => 
         payment_method_types: ['card'],
         line_items,
         mode: 'payment',
-        success_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/order-success/${orderId}?session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/order-success/${order._id}?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/checkout`,
-        client_reference_id: orderId
+        client_reference_id: String(order._id)
       });
 
       return res.json({ checkoutUrl: session.url, sessionId: session.id, testMode: false });
     }
 
-    // Stripe Test Fallback mode
+    // Test Sandbox Mode (Simulated Payment)
     order.isPaid = true;
-    order.paidAt = new Date().toISOString();
+    order.paidAt = new Date();
     order.orderStatus = 'Processing';
+    order.fulfillmentStatus = 'Processing';
+    order.paymentStatus = 'Paid';
     order.paymentResult = {
       id: 'pi_simulated_' + Date.now(),
       status: 'succeeded',
       updateTime: new Date().toISOString(),
-      emailAddress: req.user?.email || 'customer@shopkart.com'
+      emailAddress: req.user?.email || order.customerEmail || 'customer@shopkart.com'
     };
 
     order.trackingHistory.push({
       status: 'Processing',
       location: 'ShopKart Automated Warehouse',
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(),
       note: 'Payment verified via Stripe Test Sandbox mode'
     });
 
+    await order.save();
+
+    const formattedOrder = formatOrder(order);
+
     return res.json({
-      checkoutUrl: `/order-success/${order._id || order.id}?test_success=true`,
+      checkoutUrl: `/order-success/${formattedOrder._id}?test_success=true`,
       testMode: true,
-      order
+      order: formattedOrder
     });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
@@ -261,49 +260,24 @@ export const createCheckoutSession = async (req: AuthRequest, res: Response) => 
 export const getMyOrders = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id || req.user?._id;
-    const userEmail = (req.user?.email || '').toLowerCase();
+    const userEmail = (req.user?.email || '').toLowerCase().trim();
 
-    let dbOrders: any[] = [];
-    try {
-      if (mongoose.Types.ObjectId.isValid(String(userId))) {
-        dbOrders = await Order.find({ user: userId }).sort({ createdAt: -1 });
-      }
-    } catch (err) {
-      // Fallback
+    const queryConditions: any[] = [];
+    if (userId && mongoose.Types.ObjectId.isValid(String(userId))) {
+      queryConditions.push({ user: userId });
+    }
+    if (userEmail) {
+      queryConditions.push({ customerEmail: new RegExp(`^${userEmail}$`, 'i') });
+      queryConditions.push({ 'shippingAddress.email': new RegExp(`^${userEmail}$`, 'i') });
     }
 
-    const memOrders = memoryStore.orders.filter(o => {
-      const oEmail = (
-        (typeof o.user === 'object' && o.user?.email) ||
-        o.shippingAddress?.email ||
-        (o as any).customerEmail ||
-        (o as any).email ||
-        ''
-      ).trim().toLowerCase();
+    const ordersDocs = queryConditions.length > 0
+      ? await Order.find({ $or: queryConditions }).sort({ createdAt: -1 })
+      : await Order.find().sort({ createdAt: -1 });
 
-      const oUserId = typeof o.user === 'object' && o.user !== null
-        ? String(o.user.id || o.user._id || '').trim().toLowerCase()
-        : String(o.user || '').trim().toLowerCase();
+    const formattedOrders = ordersDocs.map(doc => formatOrder(doc));
 
-      const reqUserId = String(userId || '').trim().toLowerCase();
-
-      if (userEmail && oEmail && (userEmail === oEmail || oEmail.startsWith(userEmail.split('@')[0]) || userEmail.startsWith(oEmail.split('@')[0]))) return true;
-      if (reqUserId && oUserId && (reqUserId === oUserId || reqUserId.includes(oUserId) || oUserId.includes(reqUserId))) return true;
-
-      return false;
-    });
-
-    // Merge & deduplicate user orders
-    const combined = [...dbOrders, ...memOrders];
-    const seen = new Set<string>();
-    const uniqueMyOrders = combined.filter(o => {
-      const id = String(o._id || o.id || '').toLowerCase();
-      if (!id || seen.has(id)) return false;
-      seen.add(id);
-      return true;
-    });
-
-    return res.json({ orders: uniqueMyOrders });
+    return res.json({ orders: formattedOrders });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }
@@ -312,32 +286,13 @@ export const getMyOrders = async (req: AuthRequest, res: Response) => {
 export const getOrderById = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const orderDoc = await findOrderByIdOrNumber(id);
 
-    if (mongoose.connection.readyState === 1) {
-      try {
-        if (mongoose.Types.ObjectId.isValid(id)) {
-          const order = await Order.findById(id).populate('user', 'name email');
-          if (order) {
-            return res.json({ order });
-          }
-        }
-      } catch (err) {
-        // Fallback
-      }
+    if (!orderDoc) {
+      return res.status(404).json({ message: 'Order not found' });
     }
 
-    const targetId = String(id).toLowerCase().replace(/^ord-?/i, '').replace(/^#/, '');
-    const order = memoryStore.orders.find(o => {
-      const oId = String(o._id || o.id || (o as any).orderId || '').toLowerCase().replace(/^ord-?/i, '').replace(/^#/, '');
-      const oTrack = String(o.trackingNumber || '').toLowerCase();
-      return oId === targetId || oId.endsWith(targetId) || targetId.endsWith(oId) || oTrack === targetId;
-    });
-
-    if (order) {
-      return res.json({ order });
-    }
-
-    return res.status(404).json({ message: 'Order not found' });
+    return res.json({ order: formatOrder(orderDoc) });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }
@@ -346,57 +301,32 @@ export const getOrderById = async (req: AuthRequest, res: Response) => {
 export const cancelOrder = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const order = await findOrderByIdOrNumber(id);
 
-    if (mongoose.connection.readyState === 1) {
-      try {
-        if (mongoose.Types.ObjectId.isValid(id)) {
-          const order = await Order.findById(id);
-          if (order) {
-            order.orderStatus = 'Cancelled';
-            (order as any).fulfillmentStatus = 'Cancelled';
-            order.trackingHistory.push({
-              status: 'Cancelled',
-              location: 'Customer Portal',
-              timestamp: new Date(),
-              note: 'Cancelled by customer'
-            });
-            await order.save();
-            return res.json({ order, message: 'Order cancelled successfully' });
-          }
-        }
-      } catch (err) {
-        // Fallback
-      }
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
     }
 
-    const targetId = String(id).toLowerCase().replace(/^ord-?/i, '').replace(/^#/, '');
-    const order = memoryStore.orders.find(o => {
-      const oId = String(o._id || o.id || (o as any).orderId || '').toLowerCase().replace(/^ord-?/i, '').replace(/^#/, '');
-      const oTrack = String(o.trackingNumber || '').toLowerCase();
-      return oId === targetId || oId.endsWith(targetId) || targetId.endsWith(oId) || oTrack === targetId;
-    });
+    const currentStatus = order.fulfillmentStatus || order.orderStatus || 'Pending';
+    if (['Pending', 'Processing', 'Order Placed'].includes(currentStatus)) {
+      order.orderStatus = 'Cancelled';
+      order.fulfillmentStatus = 'Cancelled';
+      order.paymentStatus = 'Cancelled';
 
-    if (order) {
-      const currentSt = (order as any).fulfillmentStatus || order.orderStatus;
-      if (currentSt === 'Pending' || currentSt === 'Processing' || currentSt === 'Order Placed') {
-        order.orderStatus = 'Cancelled';
-        (order as any).fulfillmentStatus = 'Cancelled';
-        if (!order.trackingHistory) order.trackingHistory = [];
-        order.trackingHistory.push({
-          status: 'Cancelled',
-          location: 'Customer Portal',
-          timestamp: new Date().toISOString(),
-          note: 'Cancelled by customer'
-        });
+      if (!order.trackingHistory) order.trackingHistory = [];
+      order.trackingHistory.push({
+        status: 'Cancelled',
+        location: 'Customer Portal',
+        timestamp: new Date(),
+        note: 'Cancelled by customer'
+      });
 
-        memoryStore.saveOrders();
-        return res.json({ order, message: 'Order cancelled successfully' });
-      } else {
-        return res.status(400).json({ message: `Cannot cancel order in status: ${currentSt}` });
-      }
+      await order.save();
+
+      return res.json({ order: formatOrder(order), message: 'Order cancelled successfully' });
+    } else {
+      return res.status(400).json({ message: `Cannot cancel order in status: ${currentStatus}` });
     }
-
-    return res.status(404).json({ message: 'Order not found' });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }
@@ -407,59 +337,75 @@ export const syncOrder = async (req: AuthRequest, res: Response) => {
     const { order, orders } = req.body;
     const ordersToSync = Array.isArray(orders) ? orders : order ? [order] : [];
 
-    ordersToSync.forEach((o: any) => {
-      if (!o) return;
-      const oId = String(o._id || o.id || o.orderId || '').toLowerCase();
-      if (!oId) return;
+    let count = 0;
+    for (const o of ordersToSync) {
+      if (!o) continue;
+      const oId = String(o._id || o.id || o.orderId || '');
 
-      const existingIndex = memoryStore.orders.findIndex(m => {
-        const mId = String(m._id || m.id || '').toLowerCase();
-        return mId === oId || mId.endsWith(oId) || oId.endsWith(mId);
+      const mongoUserId = mongoose.Types.ObjectId.isValid(String(o.user?.id || o.user?._id || o.user))
+        ? o.user?.id || o.user?._id || o.user
+        : new mongoose.Types.ObjectId();
+
+      const formattedOrderItems = (o.orderItems || []).map((item: any) => {
+        const pIdStr = String(item.product?._id || item.product?.id || item.product || '');
+        return {
+          ...item,
+          product: mongoose.Types.ObjectId.isValid(pIdStr)
+            ? pIdStr
+            : new mongoose.Types.ObjectId()
+        };
       });
 
-      const formattedOrder: any = {
-        ...o,
-        _id: o._id || o.id || `ord-${Date.now()}`,
-        id: o.id || o._id || `ord-${Date.now()}`,
-        user: typeof o.user === 'object' && o.user !== null
-          ? o.user
-          : { name: o.customerName || o.customer || 'ShopKart Customer', email: o.customerEmail || '' },
+      const payload: any = {
+        user: mongoUserId,
         customerName: o.customerName || (typeof o.user === 'object' ? o.user?.name : '') || o.customer || 'ShopKart Customer',
         customerEmail: o.customerEmail || (typeof o.user === 'object' ? o.user?.email : '') || '',
-        orderItems: o.orderItems || [],
+        orderItems: formattedOrderItems,
         shippingAddress: o.shippingAddress || {},
         paymentMethod: o.paymentMethod || 'Stripe',
         isPaid: o.isPaid ?? true,
         totalPrice: o.totalPrice || o.amount || 0,
+        itemsPrice: o.itemsPrice || o.totalPrice || 0,
+        taxPrice: o.taxPrice || 0,
+        shippingPrice: o.shippingPrice || 0,
         orderStatus: o.orderStatus || o.fulfillmentStatus || 'Processing',
-        createdAt: o.createdAt || new Date().toISOString()
+        fulfillmentStatus: o.fulfillmentStatus || o.orderStatus || 'Processing',
+        paymentStatus: o.paymentStatus || (o.isPaid ? 'Paid' : 'Pending'),
+        trackingNumber: o.trackingNumber || 'SK-' + Math.floor(1000000 + Math.random() * 9000000),
+        estimatedDelivery: o.estimatedDelivery || new Date(Date.now() + 86400000 * 4)
       };
 
-      if (existingIndex >= 0) {
-        const existingOrder = memoryStore.orders[existingIndex];
-        const serverStatus = (existingOrder as any).fulfillmentStatus || existingOrder.orderStatus;
-
-        // If server order is Refunded, protect server status from stale local overwrite
-        if (serverStatus === 'Refunded') {
-          (formattedOrder as any).orderStatus = 'Refunded';
-          (formattedOrder as any).fulfillmentStatus = 'Refunded';
-          (formattedOrder as any).paymentStatus = 'Refunded';
-        } else if (serverStatus === 'Cancelled' && formattedOrder.orderStatus === 'Refunded') {
-          // Keep Refunded if local was updated to Refunded
-          (existingOrder as any).orderStatus = 'Refunded';
-          (existingOrder as any).fulfillmentStatus = 'Refunded';
-        }
-
-        memoryStore.orders[existingIndex] = { ...formattedOrder, ...existingOrder, orderStatus: existingOrder.orderStatus, fulfillmentStatus: (existingOrder as any).fulfillmentStatus || existingOrder.orderStatus };
+      if (mongoose.Types.ObjectId.isValid(oId)) {
+        await Order.findByIdAndUpdate(oId, payload, { upsert: true, new: true });
       } else {
-        memoryStore.orders.unshift(formattedOrder);
+        await Order.create({ ...payload, trackingNumber: o.trackingNumber || 'SK-' + Math.floor(1000000 + Math.random() * 9000000) });
       }
-    });
+      count++;
+    }
 
-    memoryStore.saveOrders();
-
-    return res.json({ success: true, count: memoryStore.orders.length });
+    return res.json({ success: true, count });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }
 };
+
+// Internal Helper to find order by ID or Tracking Number
+async function findOrderByIdOrNumber(idOrNum: string) {
+  if (!idOrNum) return null;
+  const cleanId = String(idOrNum).trim();
+
+  if (mongoose.Types.ObjectId.isValid(cleanId)) {
+    const doc = await Order.findById(cleanId);
+    if (doc) return doc;
+  }
+
+  // Search by tracking number or regex substring
+  const searchRegex = new RegExp(cleanId.replace(/^#/, '').replace(/^ord-?/i, ''), 'i');
+  return await Order.findOne({
+    $or: [
+      { trackingNumber: cleanId },
+      { trackingNumber: searchRegex },
+      { customerEmail: searchRegex }
+    ]
+  });
+}

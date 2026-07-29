@@ -17,8 +17,12 @@ export interface ITrackingEvent {
 
 export interface IOrder extends Document {
   user: mongoose.Types.ObjectId;
+  customerName?: string;
+  customerEmail?: string;
   orderItems: IOrderItem[];
   shippingAddress: {
+    fullName?: string;
+    email?: string;
     street: string;
     city: string;
     state: string;
@@ -39,8 +43,10 @@ export interface IOrder extends Document {
   shippingPrice: number;
   totalPrice: number;
   orderStatus: 'Pending' | 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled' | 'Refunded';
+  fulfillmentStatus?: string;
+  paymentStatus?: string;
   trackingNumber: string;
-  estimatedDelivery: Date;
+  estimatedDelivery?: Date;
   trackingHistory: ITrackingEvent[];
   createdAt: Date;
   updatedAt: Date;
@@ -56,6 +62,8 @@ const TrackingEventSchema = new Schema<ITrackingEvent>({
 const OrderSchema: Schema = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    customerName: { type: String },
+    customerEmail: { type: String },
     orderItems: [
       {
         product: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
@@ -66,6 +74,8 @@ const OrderSchema: Schema = new Schema(
       }
     ],
     shippingAddress: {
+      fullName: { type: String },
+      email: { type: String },
       street: { type: String, required: true },
       city: { type: String, required: true },
       state: { type: String, required: true },
@@ -90,6 +100,8 @@ const OrderSchema: Schema = new Schema(
       enum: ['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled', 'Refunded'],
       default: 'Pending'
     },
+    fulfillmentStatus: { type: String },
+    paymentStatus: { type: String },
     trackingNumber: { type: String, required: true },
     estimatedDelivery: { type: Date },
     trackingHistory: [TrackingEventSchema]

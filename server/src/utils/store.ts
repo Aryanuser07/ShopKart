@@ -576,7 +576,6 @@ import fs from 'fs';
 import path from 'path';
 
 const DATA_DIR = path.join(__dirname, '../../../data');
-const ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
 const PRODUCTS_FILE = path.join(DATA_DIR, 'products.json');
 
 const loadJsonData = (filePath: string, fallback: any) => {
@@ -610,13 +609,8 @@ class MemoryStore {
   products: MemoryProduct[] = loadJsonData(PRODUCTS_FILE, [...INITIAL_PRODUCTS]);
   categories: MemoryCategory[] = [...INITIAL_CATEGORIES];
   users: MemoryUser[] = [...INITIAL_USERS];
-  orders: MemoryOrder[] = loadJsonData(ORDERS_FILE, [...INITIAL_ORDERS]);
   reviews: any[] = [];
   otps: Map<string, MemoryOTP> = new Map();
-
-  saveOrders() {
-    saveJsonData(ORDERS_FILE, this.orders);
-  }
 
   saveProducts() {
     saveJsonData(PRODUCTS_FILE, this.products);
