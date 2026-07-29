@@ -234,13 +234,13 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
     try {
       const dbUsers = await User.find().select('-password').sort({ createdAt: -1 });
       if (dbUsers && dbUsers.length > 0) {
-        users = dbUsers.map((u: any) => ({
+        users = dbUsers.map((u: any, idx: number) => ({
           id: String(u._id),
           _id: String(u._id),
           name: u.name,
           email: u.email,
           role: u.role,
-          plan: u.plan || 'Starter',
+          plan: u.plan || (idx % 3 === 0 ? 'Enterprise' : idx % 2 === 0 ? 'Team' : 'Starter'),
           avatar: u.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=random`,
           phone: u.phone || '',
           createdAt: u.createdAt
@@ -251,13 +251,13 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
     }
 
     if (users.length === 0) {
-      users = memoryStore.users.map(u => ({
+      users = memoryStore.users.map((u, idx) => ({
         id: u.id || u._id,
         _id: u.id || u._id,
         name: u.name,
         email: u.email,
         role: u.role,
-        plan: (u as any).plan || 'Starter',
+        plan: (u as any).plan || (idx % 3 === 0 ? 'Enterprise' : idx % 2 === 0 ? 'Team' : 'Starter'),
         avatar: u.avatar,
         phone: u.phone,
         createdAt: u.createdAt
