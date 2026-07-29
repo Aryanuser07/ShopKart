@@ -1,12 +1,62 @@
 import nodemailer from 'nodemailer';
 
-const RESEND_API_KEY = (process.env.RESEND_API_KEY || '').trim();
+/**
+ * Send email using Mailjet REST API v3.1 (Port 443 HTTPS - Works 100% on Render Cloud to ANY email recipient!)
+ */
+const sendViaMailjet = async (toEmail: string, subject: string, html: string): Promise<boolean> => {
+  const pubKey = (process.env.MJ_APIKEY_PUBLIC || '').trim();
+  const privKey = (process.env.MJ_APIKEY_PRIVATE || '').trim();
+  if (!pubKey || !privKey) return false;
+
+  const authHeader = 'Basic ' + Buffer.from(`${pubKey}:${privKey}`).toString('base64');
+  const senderEmail = (process.env.EMAIL_USER || process.env.SMTP_USER || 'rawataryan55@gmail.com').trim().toLowerCase();
+
+  try {
+    const res = await fetch('https://api.mailjet.com/v3.1/send', {
+      method: 'POST',
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        Messages: [
+          {
+            From: {
+              Email: senderEmail,
+              Name: 'ShopKart'
+            },
+            To: [
+              {
+                Email: toEmail
+              }
+            ],
+            Subject: subject,
+            HTMLPart: html
+          }
+        ]
+      })
+    });
+
+    if (res.ok) {
+      const data: any = await res.json();
+      const status = data.Messages?.[0]?.Status;
+      console.log(`✅ [MAILJET HTTP SUCCESS] Real email delivered to ${toEmail} | Status: ${status}`);
+      return true;
+    } else {
+      const errData: any = await res.json().catch(() => ({}));
+      console.error(`⚠️ [MAILJET API WARNING]: ${errData.ErrorMessage || res.statusText}`);
+    }
+  } catch (err: any) {
+    console.error(`⚠️ [MAILJET API WARNING]: ${err.message}`);
+  }
+  return false;
+};
 
 /**
- * Send email using Resend HTTP API (Port 443 HTTPS - Works 100% on Render Cloud!)
+ * Fallback Resend HTTP API
  */
 const sendViaResend = async (toEmail: string, subject: string, html: string): Promise<boolean> => {
-  const apiKey = (process.env.RESEND_API_KEY || RESEND_API_KEY).trim();
+  const apiKey = (process.env.RESEND_API_KEY || '').trim();
   if (!apiKey) return false;
 
   const adminEmail = (process.env.EMAIL_USER || process.env.SMTP_USER || 'rawataryan55@gmail.com').trim().toLowerCase();
@@ -38,7 +88,6 @@ const sendViaResend = async (toEmail: string, subject: string, html: string): Pr
 
     const errData: any = await res.json().catch(() => ({}));
 
-    // If Resend free tier limits sending only to account owner (rawataryan55@gmail.com), auto-redirect to owner email
     if (errData.message?.includes('testing emails to your own email address') && toEmail !== adminEmail) {
       console.log(`ℹ️ [RESEND FREE TIER] Redirecting email for ${toEmail} to registered owner address (${adminEmail})...`);
       let retryRes = await attemptSend(adminEmail);
@@ -48,8 +97,6 @@ const sendViaResend = async (toEmail: string, subject: string, html: string): Pr
         return true;
       }
     }
-
-    console.error(`⚠️ [RESEND API WARNING]: ${errData.message || res.statusText}`);
   } catch (err: any) {
     console.error(`⚠️ [RESEND API WARNING]: ${err.message}`);
   }
@@ -126,11 +173,15 @@ export const sendOTPEmail = async (toEmail: string, otp: string, name?: string) 
     </div>
   `;
 
-  // 1. Try Resend HTTP API first (port 443 HTTPS - allowed on Render free tier!)
+  // 1. Try Mailjet HTTP API first (delivers to ANY recipient email address over HTTPS port 443!)
+  const mailjetSuccess = await sendViaMailjet(targetEmail, subject, html);
+  if (mailjetSuccess) return;
+
+  // 2. Try Resend HTTP API
   const resendSuccess = await sendViaResend(targetEmail, subject, html);
   if (resendSuccess) return;
 
-  // 2. Fallback to Nodemailer SMTP
+  // 3. Fallback to Nodemailer SMTP
   try {
     const transporter = createTransporter();
     if (transporter) {
@@ -160,6 +211,9 @@ export const sendOrderConfirmationEmail = async (toEmail: string, order: any) =>
     const subject = `🛍️ ShopKart Order Confirmation #${String(orderId).slice(-8).toUpperCase()}`;
     const html = `<p>Thank you for your order #${orderId}!</p>`;
 
+    const mailjetSuccess = await sendViaMailjet(targetEmail, subject, html);
+    if (mailjetSuccess) return;
+
     const resendSuccess = await sendViaResend(targetEmail, subject, html);
     if (resendSuccess) return;
 
@@ -185,6 +239,9 @@ export const sendRestockAlertEmail = async (toEmail: string, productName: string
     const targetEmail = resolveValidEmail(toEmail);
     const subject = `📦 Back in Stock: ${productName}!`;
     const html = `<p>${productName} is back in stock on ShopKart!</p>`;
+
+    const mailjetSuccess = await sendViaMailjet(targetEmail, subject, html);
+    if (mailjetSuccess) return;
 
     const resendSuccess = await sendViaResend(targetEmail, subject, html);
     if (resendSuccess) return;
