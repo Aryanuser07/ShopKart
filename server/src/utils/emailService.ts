@@ -1,7 +1,52 @@
 import nodemailer from 'nodemailer';
 
 /**
- * Send email using Mailjet REST API v3.1 (Port 443 HTTPS - Works 100% on Render Cloud to ANY email recipient!)
+ * Send email using Brevo (Sendinblue) REST API v3 (Port 443 HTTPS - Sends to ANY recipient email address!)
+ */
+const sendViaBrevo = async (toEmail: string, subject: string, html: string): Promise<boolean> => {
+  const apiKey = (process.env.BREVO_API_KEY || '').trim();
+  if (!apiKey) return false;
+
+  const senderEmail = (process.env.EMAIL_USER || process.env.SMTP_USER || 'rawataryan55@gmail.com').trim().toLowerCase();
+
+  try {
+    const res = await fetch('https://api.sendinblue.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'api-key': apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        sender: {
+          name: 'ShopKart',
+          email: senderEmail
+        },
+        to: [
+          {
+            email: toEmail
+          }
+        ],
+        subject,
+        htmlContent: html
+      })
+    });
+
+    if (res.ok) {
+      const data: any = await res.json();
+      console.log(`✅ [BREVO HTTP SUCCESS] Real email delivered to ${toEmail} | Message ID: ${data?.messageId}`);
+      return true;
+    } else {
+      const errData: any = await res.json().catch(() => ({}));
+      console.error(`⚠️ [BREVO API WARNING]: ${errData.message || res.statusText}`);
+    }
+  } catch (err: any) {
+    console.error(`⚠️ [BREVO API WARNING]: ${err.message}`);
+  }
+  return false;
+};
+
+/**
+ * Send email using Mailjet REST API v3.1
  */
 const sendViaMailjet = async (toEmail: string, subject: string, html: string): Promise<boolean> => {
   const pubKey = (process.env.MJ_APIKEY_PUBLIC || '').trim();
@@ -40,11 +85,10 @@ const sendViaMailjet = async (toEmail: string, subject: string, html: string): P
     if (res.ok) {
       const data: any = await res.json();
       const status = data.Messages?.[0]?.Status;
-      console.log(`✅ [MAILJET HTTP SUCCESS] Real email delivered to ${toEmail} | Status: ${status}`);
-      return true;
-    } else {
-      const errData: any = await res.json().catch(() => ({}));
-      console.error(`⚠️ [MAILJET API WARNING]: ${errData.ErrorMessage || res.statusText}`);
+      if (status === 'success') {
+        console.log(`✅ [MAILJET HTTP SUCCESS] Real email delivered to ${toEmail} | Status: ${status}`);
+        return true;
+      }
     }
   } catch (err: any) {
     console.error(`⚠️ [MAILJET API WARNING]: ${err.message}`);
@@ -173,15 +217,19 @@ export const sendOTPEmail = async (toEmail: string, otp: string, name?: string) 
     </div>
   `;
 
-  // 1. Try Mailjet HTTP API first (delivers to ANY recipient email address over HTTPS port 443!)
+  // 1. Try Brevo HTTP API (sends to ANY recipient email address without domain restriction!)
+  const brevoSuccess = await sendViaBrevo(targetEmail, subject, html);
+  if (brevoSuccess) return;
+
+  // 2. Try Mailjet HTTP API
   const mailjetSuccess = await sendViaMailjet(targetEmail, subject, html);
   if (mailjetSuccess) return;
 
-  // 2. Try Resend HTTP API
+  // 3. Try Resend HTTP API
   const resendSuccess = await sendViaResend(targetEmail, subject, html);
   if (resendSuccess) return;
 
-  // 3. Fallback to Nodemailer SMTP
+  // 4. Fallback to Nodemailer SMTP
   try {
     const transporter = createTransporter();
     if (transporter) {
@@ -211,6 +259,9 @@ export const sendOrderConfirmationEmail = async (toEmail: string, order: any) =>
     const subject = `🛍️ ShopKart Order Confirmation #${String(orderId).slice(-8).toUpperCase()}`;
     const html = `<p>Thank you for your order #${orderId}!</p>`;
 
+    const brevoSuccess = await sendViaBrevo(targetEmail, subject, html);
+    if (brevoSuccess) return;
+
     const mailjetSuccess = await sendViaMailjet(targetEmail, subject, html);
     if (mailjetSuccess) return;
 
@@ -239,6 +290,9 @@ export const sendRestockAlertEmail = async (toEmail: string, productName: string
     const targetEmail = resolveValidEmail(toEmail);
     const subject = `📦 Back in Stock: ${productName}!`;
     const html = `<p>${productName} is back in stock on ShopKart!</p>`;
+
+    const brevoSuccess = await sendViaBrevo(targetEmail, subject, html);
+    if (brevoSuccess) return;
 
     const mailjetSuccess = await sendViaMailjet(targetEmail, subject, html);
     if (mailjetSuccess) return;
