@@ -1,52 +1,7 @@
 import nodemailer from 'nodemailer';
 
 /**
- * Send email using Brevo (Sendinblue) REST API v3 (Port 443 HTTPS - Sends to ANY recipient email address!)
- */
-const sendViaBrevo = async (toEmail: string, subject: string, html: string): Promise<boolean> => {
-  const apiKey = (process.env.BREVO_API_KEY || '').trim();
-  if (!apiKey) return false;
-
-  const senderEmail = (process.env.EMAIL_USER || process.env.SMTP_USER || 'rawataryan55@gmail.com').trim().toLowerCase();
-
-  try {
-    const res = await fetch('https://api.sendinblue.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'api-key': apiKey,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        sender: {
-          name: 'ShopKart',
-          email: senderEmail
-        },
-        to: [
-          {
-            email: toEmail
-          }
-        ],
-        subject,
-        htmlContent: html
-      })
-    });
-
-    if (res.ok) {
-      const data: any = await res.json();
-      console.log(`✅ [BREVO HTTP SUCCESS] Real email delivered to ${toEmail} | Message ID: ${data?.messageId}`);
-      return true;
-    } else {
-      const errData: any = await res.json().catch(() => ({}));
-      console.error(`⚠️ [BREVO API WARNING]: ${errData.message || res.statusText}`);
-    }
-  } catch (err: any) {
-    console.error(`⚠️ [BREVO API WARNING]: ${err.message}`);
-  }
-  return false;
-};
-
-/**
- * Send email using Mailjet REST API v3.1
+ * Send email using Mailjet REST API v3.1 (100% Dedicated Mailjet HTTP Integration)
  */
 const sendViaMailjet = async (toEmail: string, subject: string, html: string): Promise<boolean> => {
   const pubKey = (process.env.MJ_APIKEY_PUBLIC || '').trim();
@@ -86,97 +41,23 @@ const sendViaMailjet = async (toEmail: string, subject: string, html: string): P
       const data: any = await res.json();
       const status = data.Messages?.[0]?.Status;
       if (status === 'success') {
-        console.log(`✅ [MAILJET HTTP SUCCESS] Real email delivered to ${toEmail} | Status: ${status}`);
+        console.log(`✅ [MAILJET HTTP SUCCESS] Email delivered to ${toEmail} | Status: ${status}`);
         return true;
+      } else {
+        console.error(`⚠️ [MAILJET API RESPONSE]: Status = ${status}`, data);
       }
+    } else {
+      const errData: any = await res.json().catch(() => ({}));
+      console.error(`⚠️ [MAILJET API ERROR]: ${errData.ErrorMessage || res.statusText}`);
     }
   } catch (err: any) {
-    console.error(`⚠️ [MAILJET API WARNING]: ${err.message}`);
+    console.error(`⚠️ [MAILJET NETWORK ERROR]: ${err.message}`);
   }
   return false;
 };
 
 /**
- * Fallback Resend HTTP API
- */
-const sendViaResend = async (toEmail: string, subject: string, html: string): Promise<boolean> => {
-  const apiKey = (process.env.RESEND_API_KEY || '').trim();
-  if (!apiKey) return false;
-
-  const adminEmail = (process.env.EMAIL_USER || process.env.SMTP_USER || 'rawataryan55@gmail.com').trim().toLowerCase();
-
-  const attemptSend = async (recipient: string) => {
-    return await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        from: 'ShopKart <onboarding@resend.dev>',
-        to: [recipient],
-        subject,
-        html
-      })
-    });
-  };
-
-  try {
-    let res = await attemptSend(toEmail);
-
-    if (res.ok) {
-      const data: any = await res.json();
-      console.log(`✅ [RESEND HTTP SUCCESS] Real email sent to ${toEmail} | ID: ${data?.id}`);
-      return true;
-    }
-
-    const errData: any = await res.json().catch(() => ({}));
-
-    if (errData.message?.includes('testing emails to your own email address') && toEmail !== adminEmail) {
-      console.log(`ℹ️ [RESEND FREE TIER] Redirecting email for ${toEmail} to registered owner address (${adminEmail})...`);
-      let retryRes = await attemptSend(adminEmail);
-      if (retryRes.ok) {
-        const retryData: any = await retryRes.json();
-        console.log(`✅ [RESEND HTTP SUCCESS] Email delivered to owner inbox (${adminEmail}) | ID: ${retryData?.id}`);
-        return true;
-      }
-    }
-  } catch (err: any) {
-    console.error(`⚠️ [RESEND API WARNING]: ${err.message}`);
-  }
-  return false;
-};
-
-// Configure SMTP Transporter using SSL Port 465 for cloud fallback
-const createTransporter = () => {
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const port = Number(process.env.SMTP_PORT) || 465;
-  const user = (process.env.EMAIL_USER || process.env.SMTP_USER || '').trim();
-  const rawPass = (process.env.EMAIL_PASS || process.env.SMTP_PASS || '').trim();
-  const pass = rawPass.replace(/\s+/g, '');
-
-  if (user && pass) {
-    return nodemailer.createTransport({
-      host: host.includes('gmail') ? 'smtp.gmail.com' : host,
-      port: host.includes('gmail') ? 465 : port,
-      secure: host.includes('gmail') ? true : port === 465,
-      auth: {
-        user,
-        pass
-      },
-      connectionTimeout: 5000,
-      greetingTimeout: 5000,
-      socketTimeout: 5000
-    });
-  }
-
-  return null;
-};
-
-const getFromEmail = () => process.env.SMTP_FROM || process.env.EMAIL_USER || 'ShopKart <no-reply@shopkart.com>';
-
-/**
- * Ensures email addresses don't bounce from dummy domains (e.g. @shopkart.com -> EMAIL_USER)
+ * Ensures email addresses don't bounce from dummy domains
  */
 export const resolveValidEmail = (email?: string): string => {
   const adminEmail = (process.env.EMAIL_USER || process.env.SMTP_USER || 'rawataryan55@gmail.com').trim().toLowerCase();
@@ -217,36 +98,11 @@ export const sendOTPEmail = async (toEmail: string, otp: string, name?: string) 
     </div>
   `;
 
-  // 1. Try Brevo HTTP API (sends to ANY recipient email address without domain restriction!)
-  const brevoSuccess = await sendViaBrevo(targetEmail, subject, html);
-  if (brevoSuccess) return;
-
-  // 2. Try Mailjet HTTP API
+  // 100% Mailjet REST API
   const mailjetSuccess = await sendViaMailjet(targetEmail, subject, html);
   if (mailjetSuccess) return;
 
-  // 3. Try Resend HTTP API
-  const resendSuccess = await sendViaResend(targetEmail, subject, html);
-  if (resendSuccess) return;
-
-  // 4. Fallback to Nodemailer SMTP
-  try {
-    const transporter = createTransporter();
-    if (transporter) {
-      await transporter.sendMail({
-        from: getFromEmail(),
-        to: targetEmail,
-        subject,
-        html
-      });
-      console.log(`[SMTP EMAIL DISPATCHED] OTP sent to ${targetEmail}`);
-      return;
-    }
-  } catch (err: any) {
-    console.error(`⚠️ [SMTP WARNING] Email dispatch failed (${err.message}). Defaulting to sandbox mode.`);
-  }
-
-  console.log(`📨 [DEV SMTP SANDBOX] OTP Email for ${targetEmail} | OTP CODE: ${otp}`);
+  console.log(`📨 [MAILJET SANDBOX FALLBACK] OTP Email for ${targetEmail} | OTP CODE: ${otp}`);
 };
 
 /**
@@ -259,26 +115,9 @@ export const sendOrderConfirmationEmail = async (toEmail: string, order: any) =>
     const subject = `🛍️ ShopKart Order Confirmation #${String(orderId).slice(-8).toUpperCase()}`;
     const html = `<p>Thank you for your order #${orderId}!</p>`;
 
-    const brevoSuccess = await sendViaBrevo(targetEmail, subject, html);
-    if (brevoSuccess) return;
-
-    const mailjetSuccess = await sendViaMailjet(targetEmail, subject, html);
-    if (mailjetSuccess) return;
-
-    const resendSuccess = await sendViaResend(targetEmail, subject, html);
-    if (resendSuccess) return;
-
-    const transporter = createTransporter();
-    if (transporter) {
-      await transporter.sendMail({
-        from: getFromEmail(),
-        to: targetEmail,
-        subject,
-        html
-      });
-    }
+    await sendViaMailjet(targetEmail, subject, html);
   } catch (err: any) {
-    console.error(`⚠️ [SMTP WARNING] Order confirmation email failed: ${err.message}`);
+    console.error(`⚠️ [MAILJET WARNING] Order confirmation email failed: ${err.message}`);
   }
 };
 
@@ -291,25 +130,8 @@ export const sendRestockAlertEmail = async (toEmail: string, productName: string
     const subject = `📦 Back in Stock: ${productName}!`;
     const html = `<p>${productName} is back in stock on ShopKart!</p>`;
 
-    const brevoSuccess = await sendViaBrevo(targetEmail, subject, html);
-    if (brevoSuccess) return;
-
-    const mailjetSuccess = await sendViaMailjet(targetEmail, subject, html);
-    if (mailjetSuccess) return;
-
-    const resendSuccess = await sendViaResend(targetEmail, subject, html);
-    if (resendSuccess) return;
-
-    const transporter = createTransporter();
-    if (transporter) {
-      await transporter.sendMail({
-        from: getFromEmail(),
-        to: targetEmail,
-        subject,
-        html
-      });
-    }
+    await sendViaMailjet(targetEmail, subject, html);
   } catch (err: any) {
-    console.error(`⚠️ [SMTP WARNING] Restock email failed: ${err.message}`);
+    console.error(`⚠️ [MAILJET WARNING] Restock email failed: ${err.message}`);
   }
 };
