@@ -233,31 +233,51 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
     let users: any[] = [];
     try {
       const dbUsers = await User.find().select('-password').sort({ createdAt: -1 });
+      const orders = await Order.find();
+
       if (dbUsers && dbUsers.length > 0) {
-        users = dbUsers.map((u: any, idx: number) => ({
-          id: String(u._id),
-          _id: String(u._id),
-          name: u.name,
-          email: u.email,
-          role: u.role,
-          plan: u.plan || (idx % 3 === 0 ? 'Enterprise' : idx % 2 === 0 ? 'Team' : 'Starter'),
-          avatar: u.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=random`,
-          phone: u.phone || '',
-          createdAt: u.createdAt
-        }));
+        users = dbUsers.map((u: any) => {
+          // Calculate total order spending for this user
+          const uId = String(u._id);
+          const uEmail = (u.email || '').toLowerCase();
+
+          const userOrders = orders.filter((o: any) => {
+            const oUserId = String(o.user?._id || o.user || '');
+            const oEmail = (o.customerEmail || o.shippingAddress?.email || '').toLowerCase();
+            return oUserId === uId || (uEmail && oEmail === uEmail);
+          });
+
+          const totalSpent = userOrders.reduce((sum, o: any) => sum + Number(o.totalPrice || 0), 0);
+
+          let dynamicPlan = 'Starter';
+          if (totalSpent >= 50000) dynamicPlan = 'Enterprise';
+          else if (totalSpent >= 10000) dynamicPlan = 'Team';
+
+          return {
+            id: String(u._id),
+            _id: String(u._id),
+            name: u.name,
+            email: u.email,
+            role: u.role,
+            plan: u.plan || dynamicPlan,
+            avatar: u.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=random`,
+            phone: u.phone || '',
+            createdAt: u.createdAt
+          };
+        });
       }
     } catch (e) {
       // Fallback to memory
     }
 
     if (users.length === 0) {
-      users = memoryStore.users.map((u, idx) => ({
+      users = memoryStore.users.map(u => ({
         id: u.id || u._id,
         _id: u.id || u._id,
         name: u.name,
         email: u.email,
         role: u.role,
-        plan: (u as any).plan || (idx % 3 === 0 ? 'Enterprise' : idx % 2 === 0 ? 'Team' : 'Starter'),
+        plan: (u as any).plan || 'Starter',
         avatar: u.avatar,
         phone: u.phone,
         createdAt: u.createdAt
