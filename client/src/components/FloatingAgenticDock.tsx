@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, ShoppingBag, Sparkles, Heart, User, Shield, Zap, Compass } from 'lucide-react';
 import Dock from './Dock/Dock';
 import { useCart } from '../context/CartContext';
@@ -11,8 +11,11 @@ interface FloatingAgenticDockProps {
 
 export const FloatingAgenticDock: React.FC<FloatingAgenticDockProps> = ({ onOpenAssistant }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { setIsCartOpen } = useCart();
   const { isAdmin } = useAuth();
+
+  const isInsideAdminPage = location.pathname.startsWith('/admin');
 
   const dockItems = [
     {
@@ -55,7 +58,7 @@ export const FloatingAgenticDock: React.FC<FloatingAgenticDockProps> = ({ onOpen
       label: 'Profile',
       onClick: () => navigate('/profile')
     },
-    ...(isAdmin
+    ...(isAdmin && !isInsideAdminPage
       ? [
           {
             icon: <Shield className="w-5 h-5 text-amber-600" />,

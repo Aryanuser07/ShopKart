@@ -1,8 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, CheckCircle2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export const Footer: React.FC = () => {
+  const { user } = useAuth();
+  const [email, setEmail] = useState('');
+  const [isSubscribed, setIsSubscribed] = useState(false);
+
+  const handleNewsletterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !email.includes('@')) return;
+    setIsSubscribed(true);
+    setEmail('');
+    setTimeout(() => setIsSubscribed(false), 5000);
+  };
+
   return (
     <footer className="footer-animated-bg border-t border-slate-200/80 text-[#242b27] pt-12 pb-12 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 relative z-10">
@@ -41,26 +54,39 @@ export const Footer: React.FC = () => {
               <li><Link to="/profile" className="hover:text-[#eb9800] transition">My Profile</Link></li>
               <li><Link to="/profile" className="hover:text-[#eb9800] transition">Order Tracking</Link></li>
               <li><Link to="/cart" className="hover:text-[#eb9800] transition">Shopping Cart</Link></li>
-              <li><Link to="/admin" className="hover:text-[#eb9800] transition">Admin Suite</Link></li>
+              {user?.role === 'admin' && (
+                <li><Link to="/admin" className="hover:text-[#eb9800] transition font-bold text-amber-600">Admin Suite</Link></li>
+              )}
             </ul>
           </div>
 
           <div className="md:col-span-4 space-y-3">
             <h4 className="font-extrabold text-xs uppercase tracking-wider text-[#eb9800]">Newsletter</h4>
             <p className="text-xs text-slate-600 font-medium">Get product releases and exclusive promo codes.</p>
-            <form onSubmit={e => e.preventDefault()} className="flex items-center space-x-2">
-              <input
-                type="email"
-                placeholder="Enter email address"
-                className="px-3.5 py-2.5 bg-white/90 border border-slate-200 rounded-xl text-xs text-[#242b27] placeholder-slate-400 focus:outline-none focus:border-[#eb9800] flex-1 shadow-xs"
-              />
-              <button
-                type="submit"
-                className="px-4 py-2.5 bg-[#f59e0b] hover:bg-[#eb9800] text-slate-950 font-bold text-xs rounded-xl shadow-xs transition"
-              >
-                Join
-              </button>
-            </form>
+            
+            {isSubscribed ? (
+              <div className="flex items-center space-x-2 bg-emerald-50 border border-emerald-200 text-emerald-800 p-2.5 rounded-xl text-xs font-bold">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>✅ Subscribed successfully! Promo code sent to your email.</span>
+              </div>
+            ) : (
+              <form onSubmit={handleNewsletterSubmit} className="flex items-center space-x-2">
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="Enter email address"
+                  className="px-3.5 py-2.5 bg-white/90 border border-slate-200 rounded-xl text-xs text-[#242b27] placeholder-slate-400 focus:outline-none focus:border-[#eb9800] flex-1 shadow-xs"
+                />
+                <button
+                  type="submit"
+                  className="px-4 py-2.5 bg-[#f59e0b] hover:bg-[#eb9800] text-slate-950 font-bold text-xs rounded-xl shadow-xs transition"
+                >
+                  Join
+                </button>
+              </form>
+            )}
           </div>
 
         </div>
@@ -68,14 +94,11 @@ export const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 font-medium">
           <p>© {new Date().getFullYear()} ShopKart Agentic E-Commerce Platform. All rights reserved.</p>
-          <div className="flex space-x-4 mt-2 sm:mt-0">
-            <span className="hover:text-slate-800 cursor-pointer">Privacy Policy</span>
-            <span>•</span>
-            <span className="hover:text-slate-800 cursor-pointer">Terms of Service</span>
-          </div>
         </div>
 
       </div>
     </footer>
   );
 };
+
+export default Footer;

@@ -75,22 +75,9 @@ export const AdminOverview: React.FC = () => {
       uniqueOrders.push(o);
     });
 
-    const localRefundedSales = localOrders
-      .filter(o => {
-        const st = (o.orderStatus || o.status || '').toLowerCase();
-        return st === 'refunded' || st === 'cancelled';
-      })
-      .reduce((sum, o) => sum + Number(o.totalPrice || o.amount || 0), 0);
-
-    const localActiveSales = localOrders
-      .filter(o => {
-        const st = (o.orderStatus || o.status || '').toLowerCase();
-        return st !== 'refunded' && st !== 'cancelled';
-      })
-      .reduce((sum, o) => sum + Number(o.totalPrice || o.amount || 0), 0);
-
+    const localTotalSales = localOrders.reduce((sum, o) => sum + Number(o.totalPrice || o.amount || 0), 0);
     const baseRevenue = analyticsData?.summary?.totalSales || 0;
-    const finalTotalSales = Math.max(0, baseRevenue + localActiveSales - localRefundedSales);
+    const finalTotalSales = baseRevenue + localTotalSales;
 
     const baseOrdersCount = analyticsData?.summary?.totalOrders || 0;
     const finalTotalOrders = baseOrdersCount + localOrders.length;

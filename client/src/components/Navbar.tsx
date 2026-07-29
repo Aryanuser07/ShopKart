@@ -108,16 +108,6 @@ export const Navbar: React.FC = () => {
             {/* User Account / Login Button */}
             {user ? (
               <div className="flex items-center space-x-1 pl-1 border-l border-slate-200">
-                {user.role === 'admin' && (
-                  <Link
-                    to="/admin"
-                    className="p-2 rounded-full text-amber-600 hover:bg-amber-50 transition"
-                    title="Admin Suite"
-                  >
-                    <Shield className="w-4 h-4" />
-                  </Link>
-                )}
-
                 <Link
                   to="/profile"
                   className="bg-[#242b27] hover:bg-black text-white px-4 py-1.5 font-bold text-xs rounded-full shadow-2xs flex items-center space-x-1.5 overflow-hidden transition"

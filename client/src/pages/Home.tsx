@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 
 import { ArrowRight, TrendingUp } from 'lucide-react';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { Product } from '../types';
 import { ProductCard } from '../components/ProductCard';
 import FlowField from '../components/FlowField';
@@ -19,6 +20,7 @@ interface HomeProps {
 }
 
 export const Home: React.FC<HomeProps> = ({ onOpenAssistant }) => {
+  const { user } = useAuth();
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -118,11 +120,13 @@ export const Home: React.FC<HomeProps> = ({ onOpenAssistant }) => {
                 </GradientButton>
               </Link>
 
-              <Link to="/products?category=Electronics">
-                <GradientButton variant="outline">
-                  <span>Explore Services</span>
-                </GradientButton>
-              </Link>
+              {user?.role === 'admin' && (
+                <Link to="/admin">
+                  <GradientButton variant="outline">
+                    <span>Explore Services</span>
+                  </GradientButton>
+                </Link>
+              )}
             </motion.div>
 
           </div>
