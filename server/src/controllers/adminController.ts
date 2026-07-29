@@ -40,14 +40,22 @@ export const getAnalytics = async (req: AuthRequest, res: Response) => {
 
     const totalOrders = orders.length;
     const totalSales = orders.reduce((acc, o: any) => acc + (o.totalPrice || 0), 0);
+
+    let dbUsersCount = 0;
+    try {
+      dbUsersCount = await User.countDocuments();
+    } catch (e) {
+      dbUsersCount = memoryStore.users.length;
+    }
+
     const totalProducts = memoryStore.products.length;
-    const totalCustomers = memoryStore.users.length;
+    const totalCustomers = Math.max(dbUsersCount, memoryStore.users.length);
     const lowStockProducts = memoryStore.products.filter(p => p.stock <= 10).length;
 
     const averageOrderValue = totalOrders > 0 ? Math.round(totalSales / totalOrders) : 0;
-    const conversionRate = 3.85;
+    const conversionRate = totalOrders > 0 ? 3.85 : 0;
 
-    // Leaderboard & Top Products calculated directly from orders
+    // Leaderboard & Top Products calculated directly from real orders
     const leaderboardMap = new Map<string, any>();
 
     orders.forEach((o: any) => {
@@ -80,7 +88,7 @@ export const getAnalytics = async (req: AuthRequest, res: Response) => {
       .sort((a, b) => b.unitsSold - a.unitsSold)
       .slice(0, 5);
 
-    // Sales graph data
+    // Sales graph data based on actual total sales
     const salesGraphData6M = {
       labels: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
       revenue: [0, 0, 0, 0, 0, totalSales],
@@ -217,15 +225,37 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
 
 export const getAllUsers = async (req: AuthRequest, res: Response) => {
   try {
-    const users = memoryStore.users.map(u => ({
-      id: u.id || u._id,
-      name: u.name,
-      email: u.email,
-      role: u.role,
-      avatar: u.avatar,
-      phone: u.phone,
-      createdAt: u.createdAt
-    }));
+    let users: any[] = [];
+    try {
+      const dbUsers = await User.find().select('-password').sort({ createdAt: -1 });
+      if (dbUsers && dbUsers.length > 0) {
+        users = dbUsers.map(u => ({
+          id: String(u._id),
+          _id: String(u._id),
+          name: u.name,
+          email: u.email,
+          role: u.role,
+          avatar: u.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=random`,
+          phone: u.phone || '',
+          createdAt: u.createdAt
+        }));
+      }
+    } catch (e) {
+      // Fallback to memory
+    }
+
+    if (users.length === 0) {
+      users = memoryStore.users.map(u => ({
+        id: u.id || u._id,
+        _id: u.id || u._id,
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        avatar: u.avatar,
+        phone: u.phone,
+        createdAt: u.createdAt
+      }));
+    }
 
     return res.json({ users });
   } catch (error: any) {
@@ -240,39 +270,41 @@ export const createCustomer = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ message: 'Name and email are required' });
     }
 
-    const existing = memoryStore.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    let existing = null;
+    try {
+      existing = await User.findOne({ email: email.toLowerCase() });
+    } catch (e) {
+      existing = memoryStore.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    }
+
     if (existing) {
       return res.status(400).json({ message: 'User with this email already exists' });
     }
 
-    const newUser = {
-      _id: `user-customer-${Date.now()}`,
-      id: `user-customer-${Date.now()}`,
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash('Password123!', 10);
+    const dbUser = new User({
       name,
-      email,
+      email: email.toLowerCase(),
+      password: hashedPassword,
       role: role || 'customer',
       avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
-      phone: phone || '+91 98765 43210',
-      addresses: [],
-      wishlist: [],
-      createdAt: new Date().toISOString()
+      phone: phone || '+91 98765 43210'
+    });
+    await dbUser.save();
+
+    const newUser = {
+      _id: String(dbUser._id),
+      id: String(dbUser._id),
+      name: dbUser.name,
+      email: dbUser.email,
+      role: dbUser.role,
+      avatar: dbUser.avatar,
+      phone: dbUser.phone,
+      createdAt: dbUser.createdAt
     };
 
-    memoryStore.users.unshift(newUser);
-
-    try {
-      const bcrypt = require('bcryptjs');
-      const hashedPassword = await bcrypt.hash('Password123!', 10);
-      const dbUser = new User({
-        name,
-        email,
-        password: hashedPassword,
-        role: role || 'customer'
-      });
-      await dbUser.save();
-    } catch (dbErr) {
-      // Memory fallback active
-    }
+    memoryStore.users.unshift(newUser as any);
 
     return res.status(201).json({ message: 'Customer created successfully', user: newUser });
   } catch (error: any) {
@@ -287,6 +319,15 @@ export const updateUserRole = async (req: AuthRequest, res: Response) => {
 
     if (role !== 'admin' && role !== 'customer') {
       return res.status(400).json({ message: 'Role must be either admin or customer' });
+    }
+
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      const user = await User.findById(id);
+      if (user) {
+        user.role = role;
+        await user.save();
+        return res.json({ message: `User role updated to ${role}`, user });
+      }
     }
 
     const user = memoryStore.users.find(u => u.id === id || u._id === id);

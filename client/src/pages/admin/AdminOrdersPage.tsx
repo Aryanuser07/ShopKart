@@ -18,16 +18,7 @@ interface OrderRow {
   amount: number;
 }
 
-const SEEDED_ORDERS: OrderRow[] = [
-  { rawId: 'ord-3921', orderId: '#3921', customer: 'Nandor the Relentless', date: 'Jun 12, 2025', paymentMethod: 'Stripe', paymentStatus: 'Paid', fulfillmentStatus: 'Delivered', amount: 16499 },
-  { rawId: 'ord-3920', orderId: '#3920', customer: 'Laszlo Cravensworth', date: 'Jun 11, 2025', paymentMethod: 'Stripe', paymentStatus: 'Paid', fulfillmentStatus: 'Processing', amount: 9899 },
-  { rawId: 'ord-3919', orderId: '#3919', customer: 'Nadja', date: 'Jun 10, 2025', paymentMethod: 'Stripe', paymentStatus: 'Paid', fulfillmentStatus: 'Delivered', amount: 25847 },
-  { rawId: 'ord-3918', orderId: '#3918', customer: 'Guillermo de la Cruz', date: 'Jun 9, 2025', paymentMethod: 'COD', paymentStatus: 'Pending', fulfillmentStatus: 'Cancelled', amount: 3848 },
-  { rawId: 'ord-3917', orderId: '#3917', customer: 'Colin Robinson', date: 'Jun 8, 2025', paymentMethod: 'Stripe', paymentStatus: 'Paid', fulfillmentStatus: 'Shipped', amount: 8999 },
-  { rawId: 'ord-3916', orderId: '#3916', customer: 'The Guide', date: 'Jun 7, 2025', paymentMethod: 'Stripe', paymentStatus: 'Paid', fulfillmentStatus: 'Processing', amount: 4499 },
-  { rawId: 'ord-3915', orderId: '#3915', customer: 'Aryan Sharma', date: 'Jun 6, 2025', paymentMethod: 'Stripe', paymentStatus: 'Paid', fulfillmentStatus: 'Delivered', amount: 14999 },
-  { rawId: 'ord-3914', orderId: '#3914', customer: 'Priya Patel', date: 'Jun 5, 2025', paymentMethod: 'Stripe', paymentStatus: 'Paid', fulfillmentStatus: 'Delivered', amount: 8999 }
-];
+const SEEDED_ORDERS: OrderRow[] = [];
 
 const variantStyles: Record<string, { border: string; base: string; overlay: string; accent: string; text: string; glow: string }> = {
   emerald: {
@@ -173,7 +164,7 @@ const KokonutSelect: React.FC<{
 export const AdminOrdersPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'pending' | 'refunded'>('all');
-  const [orders, setOrders] = useState<OrderRow[]>(SEEDED_ORDERS);
+  const [orders, setOrders] = useState<OrderRow[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const { currency, format } = useCurrency();
 
@@ -181,7 +172,13 @@ export const AdminOrdersPage: React.FC = () => {
   const comboChartInstance = useRef<Chart | null>(null);
 
   const handleExport = () => {
-    const listToExport = orders && orders.length > 0 ? orders : SEEDED_ORDERS;
+    const listToExport = orders;
+    if (listToExport.length === 0) {
+      setToastMessage('ℹ️ No orders to export.');
+      setTimeout(() => setToastMessage(null), 4000);
+      return;
+    }
+
     let csv = `Order ID,Customer,Date,Payment Status,Fulfillment Status,Amount (${currency})\n`;
     listToExport.forEach(o => {
       csv += `"${o.orderId}","${o.customer}","${o.date}","${o.paymentStatus}","${o.fulfillmentStatus}","${format(o.amount)}"\n`;
@@ -210,7 +207,6 @@ export const AdminOrdersPage: React.FC = () => {
   }, [orders]);
 
   const handleUpdateFulfillmentStatus = async (rawId: string, newStatus: string) => {
-    // 1. Update local storage
     try {
       const localOrders = JSON.parse(localStorage.getItem('shopkart-custom-orders') || '[]');
       const targetId = rawId.toLowerCase();
@@ -233,21 +229,18 @@ export const AdminOrdersPage: React.FC = () => {
       // Silent
     }
 
-    // 2. Update state directly
     setOrders(prev => prev.map(o => o.rawId === rawId ? {
       ...o,
       fulfillmentStatus: newStatus,
       paymentStatus: newStatus === 'Refunded' ? 'Refunded' : o.paymentStatus
     } : o));
 
-    // 3. Update server API
     try {
       await api.put(`/admin/orders/${rawId}/status`, { orderStatus: newStatus });
     } catch (e) {
       // Offline fallback
     }
 
-    // 4. Notify components across app
     window.dispatchEvent(new Event('shopkart-orders-updated'));
     ordersChannel?.postMessage({ type: 'order_status_updated', rawId, newStatus });
     setToastMessage(`⚡ Order ${rawId.slice(-8).toUpperCase()} fulfillment status updated to "${newStatus}"!`);
@@ -262,7 +255,7 @@ export const AdminOrdersPage: React.FC = () => {
         apiOrdersRaw = res.data.orders;
       }
     } catch (err) {
-      // Offline / permission fallback
+      // Offline fallback
     }
 
     let allOrdersRaw: any[] = [];
@@ -295,7 +288,7 @@ export const AdminOrdersPage: React.FC = () => {
       localOrdersRaw = [];
     }
 
-    const combinedRaw = [...localOrdersRaw, ...allOrdersRaw, ...apiOrdersRaw, ...userMyOrdersRaw, ...SEEDED_ORDERS];
+    const combinedRaw = [...localOrdersRaw, ...allOrdersRaw, ...apiOrdersRaw, ...userMyOrdersRaw];
     const seen = new Set<string>();
     const mergedList: OrderRow[] = [];
 
@@ -351,7 +344,7 @@ export const AdminOrdersPage: React.FC = () => {
     setOrders(mergedList);
   };
 
-const ordersChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('shopkart_orders_sync_channel') : null;
+  const ordersChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('shopkart_orders_sync_channel') : null;
 
   useEffect(() => {
     fetchOrders();
@@ -381,34 +374,17 @@ const ordersChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastCha
     comboChartInstance.current = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
         datasets: [
           {
             type: 'bar',
             label: 'Orders',
-            data: [210, 245, 228, 268, 289, 312],
+            data: [0, 0, 0, 0, 0, 0, orders.length],
             backgroundColor: '#4f46e5',
             hoverBackgroundColor: '#4338ca',
             borderRadius: 4,
             maxBarThickness: 32,
             order: 2,
-          },
-          {
-            type: 'line',
-            label: 'Target',
-            data: [230, 230, 230, 260, 260, 260],
-            borderColor: '#f59e0b',
-            backgroundColor: '#f59e0b',
-            borderWidth: 2,
-            borderDash: [6, 4],
-            pointRadius: 0,
-            pointHoverRadius: 5,
-            pointHoverBackgroundColor: '#f59e0b',
-            pointHoverBorderColor: '#ffffff',
-            pointHoverBorderWidth: 2,
-            tension: 0,
-            fill: false,
-            order: 1,
           },
         ],
       },
@@ -421,11 +397,11 @@ const ordersChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastCha
         },
         scales: {
           x: { grid: { display: false }, ticks: { color: '#4b5563' } },
-          y: { beginAtZero: true, grid: { color: '#e5e7eb' }, ticks: { color: '#4b5563' } },
+          y: { beginAtZero: true, grid: { color: '#e5e7eb' }, ticks: { color: '#4b5563', stepSize: 1 } },
         },
       },
     });
-  }, []);
+  }, [orders]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
@@ -458,7 +434,7 @@ const ordersChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastCha
 
       {/* Orders vs Monthly Target Combo Chart */}
       <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-2xs">
-        <h2 className="text-sm font-medium text-gray-900">Orders vs monthly target</h2>
+        <h2 className="text-sm font-medium text-gray-900">Orders overview</h2>
         <div className="mt-4 h-64">
           <canvas ref={comboChartRef} aria-label="Orders Target Combo Chart"></canvas>
         </div>
@@ -467,7 +443,7 @@ const ordersChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastCha
       {/* All Orders Table Section */}
       <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-2xs">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-sm font-medium text-gray-900">All orders</h2>
+          <h2 className="text-sm font-medium text-gray-900">All orders ({orders.length})</h2>
 
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <div className="relative">
@@ -520,14 +496,13 @@ const ordersChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastCha
               {filteredOrders.length === 0 ? (
                 <tr>
                   <td className="px-3 py-6 text-center text-gray-600" colSpan={6}>
-                    No orders match your search.
+                    No real orders placed yet.
                   </td>
                 </tr>
               ) : (
                 paginatedOrders.map((o, i) => {
                   const isPrepaid = o.paymentStatus === 'Paid' || (o.paymentMethod !== 'COD' && o.paymentMethod !== 'Cash on Delivery');
                   const isRefunded = o.fulfillmentStatus === 'Refunded';
-
                   const isCancelled = o.fulfillmentStatus === 'Cancelled';
 
                   const selectOptions = isCancelled

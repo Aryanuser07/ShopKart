@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Chart, registerables } from 'chart.js';
-import { ArrowUpRight, ArrowDownRight, TrendingUp, DollarSign, Users, ShoppingCart, Percent, Award, Download, X, FileText, CheckCircle2 } from 'lucide-react';
+import { ArrowUpRight, Award, Download, X, FileText, CheckCircle2 } from 'lucide-react';
 import api from '../../services/api';
 import { useCurrency } from '../../utils/formatCurrency';
 
@@ -40,14 +40,12 @@ export const AdminOverview: React.FC = () => {
         const res = await api.get('/admin/analytics');
         if (res.data) {
           setAnalyticsData(res.data);
-          if (res.data.recentOrders && res.data.recentOrders.length > 0) {
+          if (res.data.recentOrders && Array.isArray(res.data.recentOrders)) {
             setRecentOrders(res.data.recentOrders);
-          } else {
-            setRecentOrders(FALLBACK_RECENT_ORDERS);
           }
         }
       } catch (err) {
-        setRecentOrders(FALLBACK_RECENT_ORDERS);
+        // Silent fallback
       }
     };
     fetchAnalytics();
@@ -77,20 +75,6 @@ export const AdminOverview: React.FC = () => {
       uniqueOrders.push(o);
     });
 
-    if (localOrders.length === 0 && (!analyticsData || !analyticsData.summary)) {
-      return {
-        summary: {
-          totalSales: 456240,
-          totalOrders: 38,
-          totalCustomers: 2318,
-          averageOrderValue: 14060,
-          conversionRate: 3.85
-        },
-        recentOrdersList: recentOrders.length > 0 ? recentOrders : FALLBACK_RECENT_ORDERS,
-        statusBreakdown: { paid: 68, processing: 18, shipped: 9, refunded: 5 }
-      };
-    }
-
     const localRefundedSales = localOrders
       .filter(o => {
         const st = (o.orderStatus || o.status || '').toLowerCase();
@@ -105,14 +89,13 @@ export const AdminOverview: React.FC = () => {
       })
       .reduce((sum, o) => sum + Number(o.totalPrice || o.amount || 0), 0);
 
-    const baseRevenue = analyticsData?.summary?.totalSales || 456240;
+    const baseRevenue = analyticsData?.summary?.totalSales || 0;
     const finalTotalSales = Math.max(0, baseRevenue + localActiveSales - localRefundedSales);
 
-    const finalTotalOrders = analyticsData?.summary?.totalOrders
-      ? analyticsData.summary.totalOrders + localOrders.length
-      : (localOrders.length > 0 ? localOrders.length : 38);
+    const baseOrdersCount = analyticsData?.summary?.totalOrders || 0;
+    const finalTotalOrders = baseOrdersCount + localOrders.length;
 
-    const computedAOV = Math.round(finalTotalSales / Math.max(1, finalTotalOrders));
+    const computedAOV = finalTotalOrders > 0 ? Math.round(finalTotalSales / finalTotalOrders) : 0;
 
     const statusCounts = {
       paid: analyticsData?.orderStatusBreakdown?.paid || 0,
@@ -120,13 +103,6 @@ export const AdminOverview: React.FC = () => {
       shipped: analyticsData?.orderStatusBreakdown?.shipped || 0,
       refunded: analyticsData?.orderStatusBreakdown?.refunded || 0
     };
-
-    if (!analyticsData?.orderStatusBreakdown) {
-      statusCounts.paid = 68;
-      statusCounts.processing = 18;
-      statusCounts.shipped = 9;
-      statusCounts.refunded = 5;
-    }
 
     localOrders.forEach(o => {
       const st = (o.orderStatus || o.status || 'Pending').toLowerCase();
@@ -141,20 +117,25 @@ export const AdminOverview: React.FC = () => {
       }
     });
 
-    const formattedRecent = uniqueOrders.slice(0, 5).map(o => ({
-      customerName: o.user?.name || o.shippingAddress?.fullName || o.customerName || 'ShopKart Customer',
-      id: `#${(o._id || o.id || o.orderId || 'ord-1001').toString().replace(/^ord-?/i, '').slice(-8).toUpperCase()}`,
+    const formattedRecent: any[] = uniqueOrders.map(o => ({
+      customerName: o.customerName || o.user?.name || o.shippingAddress?.fullName || 'ShopKart Customer',
+      id: `#${(o._id || o.id || o.orderId || '1001').toString().replace(/^ord-?/i, '').slice(-8).toUpperCase()}`,
       status: o.orderStatus || o.status || (o.isPaid ? 'Paid' : 'Pending'),
-      amount: Number(o.totalPrice || o.amount || 0)
+      amount: Number(o.totalPrice || o.amount || 0),
+      _id: o._id || o.id,
+      user: o.user,
+      shippingAddress: o.shippingAddress,
+      orderStatus: o.orderStatus,
+      totalPrice: o.totalPrice
     }));
 
     return {
       summary: {
         totalSales: finalTotalSales,
         totalOrders: finalTotalOrders,
-        totalCustomers: (analyticsData?.summary?.totalCustomers || 2318) + new Set(localOrders.map(o => o.user?.email || o.shippingAddress?.email)).size,
+        totalCustomers: (analyticsData?.summary?.totalCustomers || 1) + new Set(localOrders.map(o => o.user?.email || o.shippingAddress?.email)).size,
         averageOrderValue: computedAOV,
-        conversionRate: 3.85
+        conversionRate: finalTotalOrders > 0 ? 3.85 : 0
       },
       recentOrdersList: formattedRecent,
       statusBreakdown: statusCounts
@@ -164,34 +145,11 @@ export const AdminOverview: React.FC = () => {
   const dynamicMetrics = getDynamicMetrics();
   const summary = dynamicMetrics.summary;
 
-  // Dynamically merge topProducts with local orders
-  const rawTopProducts = analyticsData?.topProducts && analyticsData.topProducts.length > 0
-    ? analyticsData.topProducts
-    : FALLBACK_TOP_PRODUCTS;
-
-  const isMatch = (itemTitle: string, itemProdId: string, pTitle: string, pId: string) => {
-    const t1 = itemTitle.toLowerCase();
-    const t2 = pTitle.toLowerCase();
-    if (t1.includes(t2) || t2.includes(t1)) return true;
-
-    const id1 = String(itemProdId || '').toLowerCase();
-    const id2 = String(pId || '').toLowerCase();
-    if (id1 && id2 && (id1 === id2 || id1.includes(id2) || id2.includes(id1))) return true;
-
-    const noise = new Set(['wireless', 'pro', 'ultra', 'studio', 'edition', 'running', 'led', 'the', 'and', 'with', 'for']);
-    const w1 = t1.split(/[\s\-_]+/).filter(w => w.length > 2 && !noise.has(w));
-    const w2 = t2.split(/[\s\-_]+/).filter(w => w.length > 2 && !noise.has(w));
-    const matchCount = w1.filter(w => w2.includes(w)).length;
-    return matchCount >= 1;
-  };
-
   const getDynamicTopProducts = () => {
-    // If backend returned topProducts from API, use it directly (already includes all server orders)
     if (analyticsData?.topProducts && analyticsData.topProducts.length > 0) {
       return analyticsData.topProducts;
     }
 
-    // Offline / Fallback mode: compute from FALLBACK_TOP_PRODUCTS + localStorage custom orders
     let customOrders: any[] = [];
     try {
       customOrders = JSON.parse(localStorage.getItem('shopkart-custom-orders') || '[]');
@@ -199,7 +157,7 @@ export const AdminOverview: React.FC = () => {
       customOrders = [];
     }
 
-    const list = FALLBACK_TOP_PRODUCTS.map((p: any) => ({ ...p }));
+    const list: any[] = [];
 
     customOrders.forEach((order: any) => {
       const items = order.orderItems || [];
@@ -208,9 +166,7 @@ export const AdminOverview: React.FC = () => {
         const itemProdId = String(item.product?._id || item.product?.id || item.product || '');
         if (!itemTitle && !itemProdId) return;
 
-        let match = list.find((p: any) =>
-          isMatch(itemTitle, itemProdId, p.title, p.id || p._id)
-        );
+        let match = list.find((p: any) => p.id === itemProdId || p.title === itemTitle);
 
         const qty = Number(item.quantity) || 1;
         const price = Number(item.price) || 0;
@@ -317,12 +273,12 @@ export const AdminOverview: React.FC = () => {
 
   const chartData6M = analyticsData?.salesGraphData6M || {
     labels: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-    revenue: [185000, 242000, 210000, 328000, 494000, summary.totalSales || 456240]
+    revenue: [0, 0, 0, 0, 0, summary.totalSales]
   };
 
   const chartData12M = analyticsData?.salesGraphData12M || {
     labels: ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-    revenue: [120000, 145000, 180000, 212000, 295000, 250000, 285000, 342000, 310000, 428000, 494000, summary.totalSales || 456240]
+    revenue: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, summary.totalSales]
   };
 
   const currentChartData = range === '6m' ? chartData6M : chartData12M;
@@ -357,7 +313,7 @@ export const AdminOverview: React.FC = () => {
         scales: { x: { display: false }, y: { display: false } },
       },
     });
-  }, [analyticsData]);
+  }, [analyticsData, summary]);
 
   // Line Chart
   useEffect(() => {
@@ -411,13 +367,13 @@ export const AdminOverview: React.FC = () => {
             grid: { color: '#e5e7eb' },
             ticks: {
               color: '#4b5563',
-              callback: (val) => `${format(Number(val) / 1000)}k`,
+              callback: (val) => `${format(Number(val))}`,
             },
           },
         },
       },
     });
-  }, [range, analyticsData, format]);
+  }, [range, analyticsData, format, currentChartData]);
 
   // Donut Chart
   useEffect(() => {
@@ -451,13 +407,13 @@ export const AdminOverview: React.FC = () => {
           legend: { position: 'bottom', labels: { color: '#4b5563' } },
           tooltip: {
             callbacks: {
-              label: (tooltipItem) => `${tooltipItem.label}: ${tooltipItem.raw}%`,
+              label: (tooltipItem) => `${tooltipItem.label}: ${tooltipItem.raw}`,
             },
           },
         },
       },
     });
-  }, [analyticsData]);
+  }, [analyticsData, dynamicMetrics]);
 
   return (
     <div className="space-y-6">
@@ -474,13 +430,12 @@ export const AdminOverview: React.FC = () => {
         <article className="flex flex-col gap-4 rounded-lg border border-gray-200 bg-white p-6 shadow-2xs">
           <div className="inline-flex gap-2 self-end rounded-sm bg-green-100 p-1 text-green-600">
             <ArrowUpRight className="size-4" />
-            <span className="text-xs font-medium">+16.6%</span>
+            <span className="text-xs font-medium">Real-Time</span>
           </div>
           <div>
             <strong className="block text-sm font-medium text-gray-600">Monthly revenue</strong>
             <p className="mt-1">
               <span className="text-2xl font-black text-gray-900">{format(summary.totalSales)}</span>
-              <span className="ml-2 text-xs text-gray-600">from {format(392000)}</span>
             </p>
           </div>
           <div className="h-10">
@@ -491,13 +446,12 @@ export const AdminOverview: React.FC = () => {
         <article className="flex flex-col gap-4 rounded-lg border border-gray-200 bg-white p-6 shadow-2xs">
           <div className="inline-flex gap-2 self-end rounded-sm bg-green-100 p-1 text-green-600">
             <ArrowUpRight className="size-4" />
-            <span className="text-xs font-medium">+4.1%</span>
+            <span className="text-xs font-medium">Real-Time</span>
           </div>
           <div>
             <strong className="block text-sm font-medium text-gray-600">Active customers</strong>
             <p className="mt-1">
               <span className="text-2xl font-black text-gray-900">{summary.totalCustomers.toLocaleString('en-IN')}</span>
-              <span className="ml-2 text-xs text-gray-600">from 2,227</span>
             </p>
           </div>
         </article>
@@ -505,13 +459,12 @@ export const AdminOverview: React.FC = () => {
         <article className="flex flex-col gap-4 rounded-lg border border-gray-200 bg-white p-6 shadow-2xs">
           <div className="inline-flex gap-2 self-end rounded-sm bg-green-100 p-1 text-green-600">
             <ArrowUpRight className="size-4" />
-            <span className="text-xs font-medium">+9.5%</span>
+            <span className="text-xs font-medium">Real-Time</span>
           </div>
           <div>
             <strong className="block text-sm font-medium text-gray-600">Avg. Order Value (AOV)</strong>
             <p className="mt-1">
               <span className="text-2xl font-black text-gray-900">{format(summary.averageOrderValue)}</span>
-              <span className="ml-2 text-xs text-gray-600">from {format(12840)}</span>
             </p>
           </div>
         </article>
@@ -519,13 +472,12 @@ export const AdminOverview: React.FC = () => {
         <article className="flex flex-col gap-4 rounded-lg border border-gray-200 bg-white p-6 shadow-2xs">
           <div className="inline-flex gap-2 self-end rounded-sm bg-green-100 p-1 text-green-600">
             <ArrowUpRight className="size-4" />
-            <span className="text-xs font-medium">+20.3%</span>
+            <span className="text-xs font-medium">Real-Time</span>
           </div>
           <div>
-            <strong className="block text-sm font-medium text-gray-600">Conversion Rate</strong>
+            <strong className="block text-sm font-medium text-gray-600">Total Orders</strong>
             <p className="mt-1">
-              <span className="text-2xl font-black text-gray-900">{summary.conversionRate}%</span>
-              <span className="ml-2 text-xs text-gray-600">from 3.20%</span>
+              <span className="text-2xl font-black text-gray-900">{summary.totalOrders}</span>
             </p>
           </div>
         </article>
@@ -591,20 +543,28 @@ export const AdminOverview: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {topProducts.map((p: any, i: number) => (
-                  <tr key={i} className="text-gray-900 hover:bg-slate-50 transition">
-                    <td className="px-3 py-2.5 whitespace-nowrap font-semibold">{p.title}</td>
-                    <td className="px-3 py-2.5 whitespace-nowrap">
-                      <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 border border-indigo-100">
-                        {p.category}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2.5 whitespace-nowrap text-center font-bold text-slate-700">{p.unitsSold} units</td>
-                    <td className="px-3 py-2.5 whitespace-nowrap text-right font-black text-[#eb9800]">
-                      {format(p.revenue)}
+                {topProducts.length === 0 ? (
+                  <tr>
+                    <td className="px-3 py-6 text-center text-gray-600" colSpan={4}>
+                      No real product sales yet. Place an order to generate real metrics!
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  topProducts.map((p: any, i: number) => (
+                    <tr key={i} className="text-gray-900 hover:bg-slate-50 transition">
+                      <td className="px-3 py-2.5 whitespace-nowrap font-semibold">{p.title}</td>
+                      <td className="px-3 py-2.5 whitespace-nowrap">
+                        <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 border border-indigo-100">
+                          {p.category}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5 whitespace-nowrap text-center font-bold text-slate-700">{p.unitsSold} units</td>
+                      <td className="px-3 py-2.5 whitespace-nowrap text-right font-black text-[#eb9800]">
+                        {format(p.revenue)}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -612,19 +572,23 @@ export const AdminOverview: React.FC = () => {
 
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-2xs">
           <h2 className="text-sm font-medium text-gray-900 mb-4">Category Revenue Breakdown</h2>
-          <ul className="space-y-4">
-            {categoryDistribution.map((cat: any, idx: number) => (
-              <li key={idx}>
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="font-semibold text-gray-900">{cat.category}</span>
-                  <span className="font-bold text-gray-600">{cat.percentage}%</span>
-                </div>
-                <div className="h-1.5 rounded-full bg-gray-100">
-                  <div className="h-1.5 rounded-full bg-indigo-600 transition-all duration-500" style={{ width: `${cat.percentage}%` }}></div>
-                </div>
-              </li>
-            ))}
-          </ul>
+          {categoryDistribution.length === 0 ? (
+            <p className="text-xs text-gray-500 py-6 text-center">No real category sales yet.</p>
+          ) : (
+            <ul className="space-y-4">
+              {categoryDistribution.map((cat: any, idx: number) => (
+                <li key={idx}>
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="font-semibold text-gray-900">{cat.category}</span>
+                    <span className="font-bold text-gray-600">{cat.percentage}%</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-gray-100">
+                    <div className="h-1.5 rounded-full bg-indigo-600 transition-all duration-500" style={{ width: `${cat.percentage}%` }}></div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
 
@@ -644,35 +608,43 @@ export const AdminOverview: React.FC = () => {
             </thead>
 
             <tbody className="divide-y divide-gray-200">
-              {dynamicMetrics.recentOrdersList.map((o, i) => {
-                const rawId = (o.id || o._id || `ord-${i}`).toString();
-                const cust = o.customerName || o.user?.name || o.shippingAddress?.fullName || 'ShopKart Customer';
-                const statusText = o.status || o.orderStatus || 'Pending';
-                const amt = o.amount || o.totalPrice || 0;
+              {dynamicMetrics.recentOrdersList.length === 0 ? (
+                <tr>
+                  <td className="px-3 py-6 text-center text-gray-600" colSpan={4}>
+                    No real orders placed yet.
+                  </td>
+                </tr>
+              ) : (
+                dynamicMetrics.recentOrdersList.map((o: any, i: number) => {
+                  const rawId = (o.id || o._id || `ord-${i}`).toString();
+                  const cust = o.customerName || o.user?.name || o.shippingAddress?.fullName || 'ShopKart Customer';
+                  const statusText = o.status || o.orderStatus || 'Pending';
+                  const amt = o.amount || o.totalPrice || 0;
 
-                return (
-                  <tr key={i} className="text-gray-900 hover:bg-slate-50 transition">
-                    <td className="px-3 py-2 whitespace-nowrap font-medium">{cust}</td>
-                    <td className="px-3 py-2 whitespace-nowrap font-mono font-semibold">#{rawId.slice(-4).toUpperCase()}</td>
-                    <td className="px-3 py-2 whitespace-nowrap">
-                      <span
-                        className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                          statusText === 'Paid' || statusText === 'Delivered'
-                            ? 'bg-green-100 text-green-700'
-                            : statusText === 'Pending' || statusText === 'Processing'
-                            ? 'bg-yellow-100 text-yellow-700'
-                            : 'bg-red-100 text-red-700'
-                        }`}
-                      >
-                        {statusText}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-right font-bold">
-                      {format(amt)}
-                    </td>
-                  </tr>
-                );
-              })}
+                  return (
+                    <tr key={i} className="text-gray-900 hover:bg-slate-50 transition">
+                      <td className="px-3 py-2 whitespace-nowrap font-medium">{cust}</td>
+                      <td className="px-3 py-2 whitespace-nowrap font-mono font-semibold">#{rawId.slice(-4).toUpperCase()}</td>
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        <span
+                          className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                            statusText === 'Paid' || statusText === 'Delivered'
+                              ? 'bg-green-100 text-green-700'
+                              : statusText === 'Pending' || statusText === 'Processing'
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : 'bg-red-100 text-red-700'
+                          }`}
+                        >
+                          {statusText}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-right font-bold">
+                        {format(amt)}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -750,28 +722,5 @@ export const AdminOverview: React.FC = () => {
     </div>
   );
 };
-
-const FALLBACK_RECENT_ORDERS = [
-  { customerName: 'Nandor the Relentless', id: '#3921', status: 'Paid', amount: 16499 },
-  { customerName: 'Laszlo Cravensworth', id: '#3920', status: 'Pending', amount: 9899 },
-  { customerName: 'Nadja', id: '#3919', status: 'Paid', amount: 25847 },
-  { customerName: 'Guillermo de la Cruz', id: '#3918', status: 'Refunded', amount: 3848 },
-];
-
-const FALLBACK_TOP_PRODUCTS = [
-  { id: 'prod-1', title: 'Aura Studio Wireless Headphones', category: 'Audio', unitsSold: 141, revenue: 2114859 },
-  { id: 'prod-2', title: 'UltraSpeed Pro M2 Wireless Mouse', category: 'Accessories', unitsSold: 114, revenue: 512886 },
-  { id: 'prod-4', title: 'Chronos Smart Watch Ultra Titanium', category: 'Wearables', unitsSold: 97, revenue: 1842903 },
-  { id: 'prod-3', title: 'VaporMax Air Kinetic Sneakers', category: 'Footwear', unitsSold: 83, revenue: 746917 },
-  { id: 'prod-5', title: 'Lumina Ergonomic Desk Lamp', category: 'Lighting', unitsSold: 62, revenue: 216938 }
-];
-
-const FALLBACK_CATEGORY_DISTRIBUTION = [
-  { category: 'Audio & Acoustics', percentage: 38 },
-  { category: 'Wearables & Watches', percentage: 30 },
-  { category: 'Footwear & Fashion', percentage: 19 },
-  { category: 'Home & Lighting', percentage: 8 },
-  { category: 'Accessories & Tech', percentage: 5 }
-];
 
 export default AdminOverview;

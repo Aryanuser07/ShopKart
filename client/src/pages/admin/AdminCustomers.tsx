@@ -13,21 +13,12 @@ interface CustomerRow {
   joined: string;
 }
 
-const SEEDED_CUSTOMERS: CustomerRow[] = [
-  { name: 'Nandor the Relentless', email: 'nandor@orbitly.com', plan: 'Team', status: 'active', joined: 'Feb 3, 2025' },
-  { name: 'Laszlo Cravensworth', email: 'laszlo@orbitly.com', plan: 'Enterprise', status: 'active', joined: 'Nov 18, 2024' },
-  { name: 'Nadja', email: 'nadja@orbitly.com', plan: 'Team', status: 'trial', joined: 'Jun 9, 2025' },
-  { name: 'Guillermo de la Cruz', email: 'guillermo@orbitly.com', plan: 'Starter', status: 'past-due', joined: 'Aug 22, 2024' },
-  { name: 'Colin Robinson', email: 'colin@orbitly.com', plan: 'Starter', status: 'active', joined: 'Jan 30, 2025' },
-  { name: 'Aryan Sharma', email: 'customer@shopkart.com', plan: 'Enterprise', status: 'active', joined: 'Jan 15, 2025' },
-  { name: 'Priya Patel', email: 'priya.patel@gmail.com', plan: 'Team', status: 'trial', joined: 'Mar 10, 2025' },
-  { name: 'Vikram Malhotra', email: 'vikram.m@yahoo.com', plan: 'Starter', status: 'active', joined: 'Apr 02, 2025' }
-];
+const SEEDED_CUSTOMERS: CustomerRow[] = [];
 
 export const AdminCustomers: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [customers, setCustomers] = useState<CustomerRow[]>(SEEDED_CUSTOMERS);
+  const [customers, setCustomers] = useState<CustomerRow[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
@@ -51,28 +42,39 @@ export const AdminCustomers: React.FC = () => {
     return () => window.removeEventListener('admin-header-action', handleHeaderAction);
   }, []);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const res = await api.get('/admin/users');
-        if (res.data.users && res.data.users.length > 0) {
-          const apiUsers: CustomerRow[] = res.data.users.map((u: any, idx: number) => ({
-            name: u.name || 'Customer',
-            email: u.email || 'user@shopkart.com',
-            plan: idx % 3 === 0 ? 'Enterprise' : idx % 2 === 0 ? 'Team' : 'Starter',
-            status: u.role === 'admin' ? 'active' : idx % 4 === 0 ? 'trial' : 'active',
-            joined: new Date(u.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-          }));
-          setCustomers(apiUsers);
-        }
-      } catch (err) {
-        // Fallback
+  const fetchUsers = async () => {
+    try {
+      const res = await api.get('/admin/users');
+      if (res.data.users && Array.isArray(res.data.users)) {
+        const apiUsers: CustomerRow[] = res.data.users.map((u: any, idx: number) => ({
+          name: u.name || 'Customer',
+          email: u.email || 'user@shopkart.com',
+          plan: idx % 3 === 0 ? 'Enterprise' : idx % 2 === 0 ? 'Team' : 'Starter',
+          status: u.role === 'admin' ? 'active' : 'active',
+          joined: new Date(u.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        }));
+        setCustomers(apiUsers);
       }
-    };
+    } catch (err) {
+      // Offline fallback
+    }
+  };
+
+  useEffect(() => {
     fetchUsers();
   }, []);
 
-  // Initialize Bar Chart
+  // Compute dynamic plan counts
+  const teamCount = customers.filter(c => c.plan === 'Team').length;
+  const starterCount = customers.filter(c => c.plan === 'Starter').length;
+  const enterpriseCount = customers.filter(c => c.plan === 'Enterprise').length;
+  const totalCount = customers.length || 1;
+
+  const teamPct = Math.round((teamCount / totalCount) * 100);
+  const starterPct = Math.round((starterCount / totalCount) * 100);
+  const enterprisePct = Math.round((enterpriseCount / totalCount) * 100);
+
+  // Initialize Bar Chart dynamically
   useEffect(() => {
     if (!barChartRef.current) return;
     if (barChartInstance.current) barChartInstance.current.destroy();
@@ -83,11 +85,11 @@ export const AdminCustomers: React.FC = () => {
     barChartInstance.current = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
         datasets: [
           {
             label: 'New customers',
-            data: [82, 95, 88, 110, 104, 128],
+            data: [0, 0, 0, 0, 0, 0, customers.length],
             backgroundColor: '#4f46e5',
             hoverBackgroundColor: '#4338ca',
             borderRadius: 4,
@@ -102,11 +104,11 @@ export const AdminCustomers: React.FC = () => {
         plugins: { legend: { display: false } },
         scales: {
           x: { grid: { display: false }, ticks: { color: '#4b5563' } },
-          y: { beginAtZero: true, grid: { color: '#e5e7eb' }, ticks: { color: '#4b5563' } },
+          y: { beginAtZero: true, grid: { color: '#e5e7eb' }, ticks: { color: '#4b5563', stepSize: 1 } },
         },
       },
     });
-  }, []);
+  }, [customers]);
 
   const handleAddCustomerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,7 +143,6 @@ export const AdminCustomers: React.FC = () => {
         };
       }
     } catch (err: any) {
-      console.warn('API customer creation fallback to local state:', err);
       if (err.response?.data?.message) {
         setFormError(err.response.data.message);
         setIsSubmitting(false);
@@ -195,30 +196,30 @@ export const AdminCustomers: React.FC = () => {
             <li>
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium text-gray-900">Team</span>
-                <span className="text-gray-600">1,406</span>
+                <span className="text-gray-600 font-bold">{teamCount}</span>
               </div>
               <div className="mt-1.5 h-1.5 rounded-full bg-gray-100">
-                <div className="h-1.5 rounded-full bg-indigo-600" style={{ width: '61%' }}></div>
+                <div className="h-1.5 rounded-full bg-indigo-600" style={{ width: `${teamPct}%` }}></div>
               </div>
             </li>
 
             <li>
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium text-gray-900">Starter</span>
-                <span className="text-gray-600">742</span>
+                <span className="text-gray-600 font-bold">{starterCount}</span>
               </div>
               <div className="mt-1.5 h-1.5 rounded-full bg-gray-100">
-                <div className="h-1.5 rounded-full bg-indigo-600" style={{ width: '32%' }}></div>
+                <div className="h-1.5 rounded-full bg-indigo-600" style={{ width: `${starterPct}%` }}></div>
               </div>
             </li>
 
             <li>
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium text-gray-900">Enterprise</span>
-                <span className="text-gray-600">170</span>
+                <span className="text-gray-600 font-bold">{enterpriseCount}</span>
               </div>
               <div className="mt-1.5 h-1.5 rounded-full bg-gray-100">
-                <div className="h-1.5 rounded-full bg-indigo-600" style={{ width: '7%' }}></div>
+                <div className="h-1.5 rounded-full bg-indigo-600" style={{ width: `${enterprisePct}%` }}></div>
               </div>
             </li>
           </ul>
@@ -228,7 +229,7 @@ export const AdminCustomers: React.FC = () => {
       {/* Table */}
       <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-2xs">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-sm font-medium text-gray-900">All customers</h2>
+          <h2 className="text-sm font-medium text-gray-900">All customers ({customers.length})</h2>
 
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <div className="relative">
@@ -272,7 +273,7 @@ export const AdminCustomers: React.FC = () => {
               {filteredCustomers.length === 0 ? (
                 <tr>
                   <td className="px-3 py-6 text-center text-gray-600" colSpan={5}>
-                    No customers match your search.
+                    No registered customers yet.
                   </td>
                 </tr>
               ) : (
