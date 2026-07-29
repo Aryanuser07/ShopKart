@@ -126,7 +126,7 @@ export const AdminProducts: React.FC = () => {
       title: title.trim(),
       category,
       price: Math.round(baseInrPrice),
-      stock: Number(stock) || 50,
+      stock: stock !== '' && !isNaN(Number(stock)) ? Number(stock) : 0,
       rating: 4.9,
       numReviews: 1,
       brand: 'ShopKart',
@@ -172,7 +172,7 @@ export const AdminProducts: React.FC = () => {
     }
 
     setEditPrice(activePrice ? activePrice.toString() : '');
-    setEditStock(p.stock ? p.stock.toString() : '50');
+    setEditStock(p.stock !== undefined && p.stock !== null ? p.stock.toString() : '0');
     setEditImages(p.images && p.images.length > 0 ? [...p.images] : ['']);
     setEditDescription(p.description || '');
   };
@@ -201,7 +201,7 @@ export const AdminProducts: React.FC = () => {
       title: editTitle.trim(),
       category: editCategory,
       price: Math.round(baseInrPrice),
-      stock: Number(editStock) || 0,
+      stock: editStock !== '' && !isNaN(Number(editStock)) ? Number(editStock) : 0,
       images: finalImages,
       description: editDescription.trim() || editingProduct.description || `${editTitle} - Premium Catalog Item`
     };
