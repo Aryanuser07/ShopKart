@@ -38,8 +38,13 @@ export const getAnalytics = async (req: AuthRequest, res: Response) => {
     const ordersDocs = await Order.find().sort({ createdAt: -1 });
     const orders = ordersDocs.map(o => formatAdminOrder(o));
 
-    const totalOrders = orders.length;
-    const totalSales = orders.reduce((acc, o: any) => acc + (o.totalPrice || 0), 0);
+    const activeOrders = orders.filter((o: any) => {
+      const st = (o.orderStatus || o.fulfillmentStatus || '').toLowerCase();
+      return st !== 'refunded' && st !== 'cancelled';
+    });
+
+    const totalOrders = activeOrders.length;
+    const totalSales = activeOrders.reduce((acc, o: any) => acc + (o.totalPrice || 0), 0);
 
     let dbUsersCount = 0;
     try {
@@ -55,10 +60,10 @@ export const getAnalytics = async (req: AuthRequest, res: Response) => {
     const averageOrderValue = totalOrders > 0 ? Math.round(totalSales / totalOrders) : 0;
     const conversionRate = totalOrders > 0 ? 3.85 : 0;
 
-    // Leaderboard & Top Products calculated directly from real orders
+    // Leaderboard & Top Products calculated directly from active (non-refunded) orders
     const leaderboardMap = new Map<string, any>();
 
-    orders.forEach((o: any) => {
+    activeOrders.forEach((o: any) => {
       const items = o.orderItems || [];
       items.forEach((item: any) => {
         const itemTitle = (item.title || item.product?.title || '').trim();

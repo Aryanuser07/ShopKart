@@ -75,12 +75,17 @@ export const AdminOverview: React.FC = () => {
       uniqueOrders.push(o);
     });
 
-    const localTotalSales = localOrders.reduce((sum, o) => sum + Number(o.totalPrice || o.amount || 0), 0);
+    const activeLocalOrders = localOrders.filter(o => {
+      const st = (o.orderStatus || o.status || '').toLowerCase();
+      return st !== 'refunded' && st !== 'cancelled';
+    });
+
+    const localTotalSales = activeLocalOrders.reduce((sum, o) => sum + Number(o.totalPrice || o.amount || 0), 0);
     const baseRevenue = analyticsData?.summary?.totalSales || 0;
     const finalTotalSales = baseRevenue + localTotalSales;
 
     const baseOrdersCount = analyticsData?.summary?.totalOrders || 0;
-    const finalTotalOrders = baseOrdersCount + localOrders.length;
+    const finalTotalOrders = baseOrdersCount + activeLocalOrders.length;
 
     const computedAOV = finalTotalOrders > 0 ? Math.round(finalTotalSales / finalTotalOrders) : 0;
 
@@ -144,9 +149,14 @@ export const AdminOverview: React.FC = () => {
       customOrders = [];
     }
 
+    const activeCustomOrders = customOrders.filter((o: any) => {
+      const st = (o.orderStatus || o.status || '').toLowerCase();
+      return st !== 'refunded' && st !== 'cancelled';
+    });
+
     const list: any[] = [];
 
-    customOrders.forEach((order: any) => {
+    activeCustomOrders.forEach((order: any) => {
       const items = order.orderItems || [];
       items.forEach((item: any) => {
         const itemTitle = (item.title || item.product?.title || '').trim();
