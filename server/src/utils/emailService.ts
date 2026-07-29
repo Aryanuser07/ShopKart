@@ -1,16 +1,52 @@
 import nodemailer from 'nodemailer';
 
-// Configure SMTP Transporter using SSL Port 465 for cloud reliability
+const RESEND_API_KEY = (process.env.RESEND_API_KEY || '').trim();
+
+/**
+ * Send email using Resend HTTP API (Port 443 HTTPS - Works 100% on Render Cloud!)
+ */
+const sendViaResend = async (toEmail: string, subject: string, html: string): Promise<boolean> => {
+  const apiKey = (process.env.RESEND_API_KEY || RESEND_API_KEY).trim();
+  if (!apiKey) return false;
+
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: 'ShopKart <onboarding@resend.dev>',
+        to: [toEmail],
+        subject,
+        html
+      })
+    });
+
+    if (res.ok) {
+      const data: any = await res.json();
+      console.log(`✅ [RESEND HTTP SUCCESS] Real email sent to ${toEmail} | ID: ${data?.id}`);
+      return true;
+    } else {
+      const errData: any = await res.json().catch(() => ({}));
+      console.error(`⚠️ [RESEND API WARNING]: ${errData.message || res.statusText}`);
+    }
+  } catch (err: any) {
+    console.error(`⚠️ [RESEND API WARNING]: ${err.message}`);
+  }
+  return false;
+};
+
+// Configure SMTP Transporter using SSL Port 465 for cloud fallback
 const createTransporter = () => {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
   const port = Number(process.env.SMTP_PORT) || 465;
   const user = (process.env.EMAIL_USER || process.env.SMTP_USER || '').trim();
   const rawPass = (process.env.EMAIL_PASS || process.env.SMTP_PASS || '').trim();
-  // Strip any accidental spaces in App Passwords (e.g. "bjda vagz mqek dkek" -> "bjdavagzmqekdkek")
   const pass = rawPass.replace(/\s+/g, '');
 
   if (user && pass) {
-    // Port 465 SSL works reliably across cloud providers (Render, AWS, DigitalOcean)
     return nodemailer.createTransport({
       host: host.includes('gmail') ? 'smtp.gmail.com' : host,
       port: host.includes('gmail') ? 465 : port,
@@ -19,9 +55,9 @@ const createTransporter = () => {
         user,
         pass
       },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 10000
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 5000
     });
   }
 
@@ -72,6 +108,11 @@ export const sendOTPEmail = async (toEmail: string, otp: string, name?: string) 
     </div>
   `;
 
+  // 1. Try Resend HTTP API first (port 443 HTTPS - allowed on Render free tier!)
+  const resendSuccess = await sendViaResend(targetEmail, subject, html);
+  if (resendSuccess) return;
+
+  // 2. Fallback to Nodemailer SMTP
   try {
     const transporter = createTransporter();
     if (transporter) {
@@ -82,13 +123,13 @@ export const sendOTPEmail = async (toEmail: string, otp: string, name?: string) 
         html
       });
       console.log(`[SMTP EMAIL DISPATCHED] OTP sent to ${targetEmail}`);
-    } else {
-      console.log(`📨 [DEV SMTP SANDBOX] OTP Email for ${targetEmail} | OTP CODE: ${otp}`);
+      return;
     }
   } catch (err: any) {
     console.error(`⚠️ [SMTP WARNING] Email dispatch failed (${err.message}). Defaulting to sandbox mode.`);
-    console.log(`📨 [DEV SMTP SANDBOX] OTP Email for ${targetEmail} | OTP CODE: ${otp}`);
   }
+
+  console.log(`📨 [DEV SMTP SANDBOX] OTP Email for ${targetEmail} | OTP CODE: ${otp}`);
 };
 
 /**
@@ -99,6 +140,10 @@ export const sendOrderConfirmationEmail = async (toEmail: string, order: any) =>
     const targetEmail = resolveValidEmail(toEmail);
     const orderId = order._id || order.id || 'Order';
     const subject = `🛍️ ShopKart Order Confirmation #${String(orderId).slice(-8).toUpperCase()}`;
+    const html = `<p>Thank you for your order #${orderId}!</p>`;
+
+    const resendSuccess = await sendViaResend(targetEmail, subject, html);
+    if (resendSuccess) return;
 
     const transporter = createTransporter();
     if (transporter) {
@@ -106,7 +151,7 @@ export const sendOrderConfirmationEmail = async (toEmail: string, order: any) =>
         from: getFromEmail(),
         to: targetEmail,
         subject,
-        html: `<p>Thank you for your order #${orderId}!</p>`
+        html
       });
     }
   } catch (err: any) {
@@ -121,6 +166,10 @@ export const sendRestockAlertEmail = async (toEmail: string, productName: string
   try {
     const targetEmail = resolveValidEmail(toEmail);
     const subject = `📦 Back in Stock: ${productName}!`;
+    const html = `<p>${productName} is back in stock on ShopKart!</p>`;
+
+    const resendSuccess = await sendViaResend(targetEmail, subject, html);
+    if (resendSuccess) return;
 
     const transporter = createTransporter();
     if (transporter) {
@@ -128,7 +177,7 @@ export const sendRestockAlertEmail = async (toEmail: string, productName: string
         from: getFromEmail(),
         to: targetEmail,
         subject,
-        html: `<p>${productName} is back in stock on ShopKart!</p>`
+        html
       });
     }
   } catch (err: any) {
