@@ -1,39 +1,27 @@
 import nodemailer from 'nodemailer';
 
-// Configure SMTP Transporter using environment variables or fallback configuration
+// Configure SMTP Transporter using SSL Port 465 for cloud reliability
 const createTransporter = () => {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const port = Number(process.env.SMTP_PORT) || 587;
+  const port = Number(process.env.SMTP_PORT) || 465;
   const user = (process.env.EMAIL_USER || process.env.SMTP_USER || '').trim();
   const rawPass = (process.env.EMAIL_PASS || process.env.SMTP_PASS || '').trim();
   // Strip any accidental spaces in App Passwords (e.g. "bjda vagz mqek dkek" -> "bjdavagzmqekdkek")
   const pass = rawPass.replace(/\s+/g, '');
 
   if (user && pass) {
-    if (user.endsWith('@gmail.com') || host.includes('gmail')) {
-      return nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user,
-          pass
-        },
-        connectionTimeout: 4000,
-        greetingTimeout: 4000,
-        socketTimeout: 4000
-      });
-    }
-
+    // Port 465 SSL works reliably across cloud providers (Render, AWS, DigitalOcean)
     return nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465,
+      host: host.includes('gmail') ? 'smtp.gmail.com' : host,
+      port: host.includes('gmail') ? 465 : port,
+      secure: host.includes('gmail') ? true : port === 465,
       auth: {
         user,
         pass
       },
-      connectionTimeout: 4000,
-      greetingTimeout: 4000,
-      socketTimeout: 4000
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000
     });
   }
 
