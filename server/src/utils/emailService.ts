@@ -1,57 +1,48 @@
 import nodemailer from 'nodemailer';
 
 /**
- * Send email using Mailjet REST API v3.1 (100% Dedicated Mailjet HTTP Integration)
+ * Send email using Brevo (Sendinblue) REST API v3 (100% Dedicated Brevo Integration)
  */
-const sendViaMailjet = async (toEmail: string, subject: string, html: string): Promise<boolean> => {
-  const pubKey = (process.env.MJ_APIKEY_PUBLIC || '').trim();
-  const privKey = (process.env.MJ_APIKEY_PRIVATE || '').trim();
-  if (!pubKey || !privKey) return false;
+const sendViaBrevo = async (toEmail: string, subject: string, html: string): Promise<boolean> => {
+  const apiKey = (process.env.BREVO_API_KEY || '').trim();
+  if (!apiKey) return false;
 
-  const authHeader = 'Basic ' + Buffer.from(`${pubKey}:${privKey}`).toString('base64');
-  const senderEmail = (process.env.EMAIL_USER || process.env.SMTP_USER || 'rawataryan55@gmail.com').trim().toLowerCase();
+  const senderEmail = (process.env.MAIL_FROM || process.env.EMAIL_USER || process.env.SMTP_USER || 'shopkartdev01@gmail.com').trim().toLowerCase();
+  const senderName = (process.env.MAIL_FROM_NAME || 'ShopKart').trim();
 
   try {
-    const res = await fetch('https://api.mailjet.com/v3.1/send', {
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
-        'Authorization': authHeader,
-        'Content-Type': 'application/json'
+        'api-key': apiKey,
+        'Content-Type': 'application/json',
+        'accept': 'application/json'
       },
       body: JSON.stringify({
-        Messages: [
+        sender: {
+          name: senderName,
+          email: senderEmail
+        },
+        to: [
           {
-            From: {
-              Email: senderEmail,
-              Name: 'ShopKart'
-            },
-            To: [
-              {
-                Email: toEmail
-              }
-            ],
-            Subject: subject,
-            HTMLPart: html
+            email: toEmail
           }
-        ]
+        ],
+        subject,
+        htmlContent: html
       })
     });
 
     if (res.ok) {
       const data: any = await res.json();
-      const status = data.Messages?.[0]?.Status;
-      if (status === 'success') {
-        console.log(`✅ [MAILJET HTTP SUCCESS] Email delivered to ${toEmail} | Status: ${status}`);
-        return true;
-      } else {
-        console.error(`⚠️ [MAILJET API RESPONSE]: Status = ${status}`, data);
-      }
+      console.log(`✅ [BREVO HTTP SUCCESS] Real email delivered to ${toEmail} | Message ID: ${data?.messageId}`);
+      return true;
     } else {
       const errData: any = await res.json().catch(() => ({}));
-      console.error(`⚠️ [MAILJET API ERROR]: ${errData.ErrorMessage || res.statusText}`);
+      console.error(`⚠️ [BREVO API WARNING]: ${errData.message || res.statusText}`);
     }
   } catch (err: any) {
-    console.error(`⚠️ [MAILJET NETWORK ERROR]: ${err.message}`);
+    console.error(`⚠️ [BREVO NETWORK ERROR]: ${err.message}`);
   }
   return false;
 };
@@ -60,7 +51,7 @@ const sendViaMailjet = async (toEmail: string, subject: string, html: string): P
  * Ensures email addresses don't bounce from dummy domains
  */
 export const resolveValidEmail = (email?: string): string => {
-  const adminEmail = (process.env.EMAIL_USER || process.env.SMTP_USER || 'rawataryan55@gmail.com').trim().toLowerCase();
+  const adminEmail = (process.env.MAIL_FROM || process.env.EMAIL_USER || 'shopkartdev01@gmail.com').trim().toLowerCase();
   if (!email || typeof email !== 'string' || !email.includes('@')) return adminEmail;
   const lower = email.trim().toLowerCase();
   if (lower.endsWith('@shopkart.com') || lower.endsWith('@example.com') || lower.endsWith('@test.com') || lower.endsWith('@localhost')) {
@@ -98,11 +89,11 @@ export const sendOTPEmail = async (toEmail: string, otp: string, name?: string) 
     </div>
   `;
 
-  // 100% Mailjet REST API
-  const mailjetSuccess = await sendViaMailjet(targetEmail, subject, html);
-  if (mailjetSuccess) return;
+  // 100% Brevo HTTP API
+  const brevoSuccess = await sendViaBrevo(targetEmail, subject, html);
+  if (brevoSuccess) return;
 
-  console.log(`📨 [MAILJET SANDBOX FALLBACK] OTP Email for ${targetEmail} | OTP CODE: ${otp}`);
+  console.log(`📨 [BREVO SANDBOX FALLBACK] OTP Email for ${targetEmail} | OTP CODE: ${otp}`);
 };
 
 /**
@@ -115,9 +106,9 @@ export const sendOrderConfirmationEmail = async (toEmail: string, order: any) =>
     const subject = `🛍️ ShopKart Order Confirmation #${String(orderId).slice(-8).toUpperCase()}`;
     const html = `<p>Thank you for your order #${orderId}!</p>`;
 
-    await sendViaMailjet(targetEmail, subject, html);
+    await sendViaBrevo(targetEmail, subject, html);
   } catch (err: any) {
-    console.error(`⚠️ [MAILJET WARNING] Order confirmation email failed: ${err.message}`);
+    console.error(`⚠️ [BREVO WARNING] Order confirmation email failed: ${err.message}`);
   }
 };
 
@@ -130,8 +121,8 @@ export const sendRestockAlertEmail = async (toEmail: string, productName: string
     const subject = `📦 Back in Stock: ${productName}!`;
     const html = `<p>${productName} is back in stock on ShopKart!</p>`;
 
-    await sendViaMailjet(targetEmail, subject, html);
+    await sendViaBrevo(targetEmail, subject, html);
   } catch (err: any) {
-    console.error(`⚠️ [MAILJET WARNING] Restock email failed: ${err.message}`);
+    console.error(`⚠️ [BREVO WARNING] Restock email failed: ${err.message}`);
   }
 };
