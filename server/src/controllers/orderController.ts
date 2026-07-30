@@ -174,6 +174,9 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
       }
     }
 
+    // Persist updated stock values to data/products.json so changes survive server restarts
+    memoryStore.saveProducts();
+
     const formattedOrder = formatOrder(orderDoc);
 
     // Send confirmation email

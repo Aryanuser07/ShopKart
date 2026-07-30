@@ -213,6 +213,7 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
     } else {
       memoryStore.products.unshift(newMemProd);
     }
+    memoryStore.saveProducts();
 
     try {
       const product = await Product.create({
@@ -256,6 +257,7 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
     if (memProd) {
       const oldStock = memProd.stock || 0;
       Object.assign(memProd, updateData, { updatedAt: new Date().toISOString() });
+      memoryStore.saveProducts();
 
       // ONLY trigger restock alert email when product was previously OUT OF STOCK (oldStock <= 0) and is now restocked (> 0),
       // OR when explicit waitlistEmails are passed in the request body.
@@ -338,6 +340,7 @@ export const deleteProduct = async (req: AuthRequest, res: Response) => {
       const matchTitle = (p.title || '').trim().toLowerCase();
       return matchId !== targetKey && matchId2 !== targetKey && matchSlug !== targetKey && matchTitle !== targetKey;
     });
+    memoryStore.saveProducts();
 
     return res.json({ message: 'Product deleted successfully' });
   } catch (error: any) {
@@ -424,6 +427,7 @@ export const syncProduct = async (req: Request, res: Response) => {
         memoryStore.products.unshift(formattedProduct);
       }
     });
+    memoryStore.saveProducts();
 
     return res.json({ success: true, count: memoryStore.products.length });
   } catch (error: any) {
