@@ -4,7 +4,7 @@ import { Shield, CreditCard, Truck, CheckCircle2, Lock, ArrowRight, AlertCircle,
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../utils/formatCurrency';
-import { getCustomProducts } from '../utils/productStorage';
+import { getCustomProducts, deductCustomProductStock } from '../utils/productStorage';
 import api from '../services/api';
 
 export const CheckoutPage: React.FC = () => {
@@ -88,6 +88,9 @@ export const CheckoutPage: React.FC = () => {
           email: user?.email
         }
       });
+
+      // Deduct stock in local custom storage immediately
+      deductCustomProductStock(cartItems);
 
       const createdOrder = res.data.order;
       createdOrder.orderStatus = paymentMethod === 'Stripe' ? 'Processing' : 'Order Placed';

@@ -73,6 +73,38 @@ export const deleteProductFromStorage = (prodOrId: Product | string) => {
   window.dispatchEvent(new Event('shopkart-products-updated'));
 };
 
+export const deductCustomProductStock = (items: { product: any; quantity: number }[]) => {
+  if (!items || items.length === 0) return;
+  const custom = getCustomProducts();
+  let modified = false;
+
+  items.forEach(item => {
+    const p = item.product;
+    if (!p) return;
+    const qty = Number(item.quantity) || 1;
+    const keys = [p._id, p.id, p.slug, p.title?.trim()].filter(Boolean).map(k => k!.toString().toLowerCase());
+
+    const match = custom.find(c => {
+      const cKeys = [c._id, c.id, c.slug, c.title?.trim()].filter(Boolean).map(k => k!.toString().toLowerCase());
+      return cKeys.some(ck => keys.includes(ck));
+    });
+
+    if (match && typeof match.stock === 'number') {
+      match.stock = Math.max(0, match.stock - qty);
+      modified = true;
+    }
+  });
+
+  if (modified) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(custom));
+      window.dispatchEvent(new Event('shopkart-products-updated'));
+    } catch (e) {
+      // Silent
+    }
+  }
+};
+
 export const mergeProductsWithCustom = (apiProducts: Product[]): Product[] => {
   const custom = getCustomProducts();
   const deletedSet = new Set(getDeletedProductIds().map(id => id.toLowerCase()));
@@ -94,7 +126,7 @@ export const mergeProductsWithCustom = (apiProducts: Product[]): Product[] => {
     });
   }
 
-  // Merge API products with local custom overrides so admin stock edits are never overwritten by fallback seeds
+  // Merge API products with local custom overrides, prioritizing live server deducted stock
   const mergedApi = apiProducts.map(apiP => {
     const keys = [apiP._id, apiP.id, apiP.slug, apiP.title?.trim()].filter(Boolean).map(k => k!.toString().toLowerCase());
     let customMatch: Product | undefined;
@@ -107,14 +139,23 @@ export const mergeProductsWithCustom = (apiProducts: Product[]): Product[] => {
     }
 
     if (customMatch) {
+      if (typeof apiP.stock === 'number') {
+        customMatch.stock = apiP.stock; // Sync live deducted stock!
+      }
       return {
-        ...apiP,
         ...customMatch,
-        stock: typeof customMatch.stock === 'number' ? customMatch.stock : apiP.stock
+        ...apiP,
+        stock: typeof apiP.stock === 'number' ? apiP.stock : customMatch.stock
       };
     }
     return apiP;
   });
+
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(custom));
+  } catch (e) {
+    // Silent
+  }
 
   const apiKeys = new Set<string>();
   apiProducts.forEach(p => {

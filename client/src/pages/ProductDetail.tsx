@@ -102,13 +102,13 @@ export const ProductDetail: React.FC = () => {
         setHasDeliveredOrder(false);
         return;
       }
-      try {
-        const res = await api.get('/orders/myorders');
-        const myOrders = res.data.orders || res.data || [];
-        const targetId = (product._id || product.id || product.slug || '').toLowerCase();
-        const targetTitle = (product.title || '').toLowerCase();
 
-        const isVerified = myOrders.some((ord: any) => {
+      const targetId = (product._id || product.id || product.slug || '').toLowerCase();
+      const targetTitle = (product.title || '').toLowerCase();
+
+      const containsProduct = (orderList: any[]) => {
+        if (!Array.isArray(orderList)) return false;
+        return orderList.some((ord: any) => {
           const st = String(ord.orderStatus || ord.fulfillmentStatus || '').toLowerCase();
           if (st === 'cancelled' || st === 'refunded' || !Array.isArray(ord.orderItems)) return false;
 
@@ -116,17 +116,41 @@ export const ProductDetail: React.FC = () => {
             const itemPId = String(item.product?._id || item.product?.id || item.product || item.id || '').toLowerCase();
             const itemTitle = String(item.title || item.name || '').toLowerCase();
             return (
-              itemPId === targetId ||
-              itemTitle === targetTitle ||
+              (targetId && itemPId === targetId) ||
+              (targetTitle && itemTitle === targetTitle) ||
+              (targetId && itemPId && (targetId.includes(itemPId) || itemPId.includes(targetId))) ||
               (targetTitle && itemTitle && (targetTitle.includes(itemTitle) || itemTitle.includes(targetTitle)))
             );
           });
         });
-        setHasDeliveredOrder(isVerified);
+      };
+
+      // 1. Check local storage orders first
+      try {
+        const localOrders = JSON.parse(localStorage.getItem('shopkart-custom-orders') || '[]');
+        if (containsProduct(localOrders)) {
+          setHasDeliveredOrder(true);
+          return;
+        }
       } catch (e) {
-        setHasDeliveredOrder(false);
+        // Silent fallback
       }
+
+      // 2. Check API orders
+      try {
+        const res = await api.get('/orders/myorders');
+        const myOrders = res.data.orders || res.data || [];
+        if (containsProduct(myOrders)) {
+          setHasDeliveredOrder(true);
+          return;
+        }
+      } catch (e) {
+        // Silent fallback
+      }
+
+      setHasDeliveredOrder(false);
     };
+
     checkDeliveredStatus();
   }, [user, product]);
 
@@ -433,7 +457,9 @@ export const ProductDetail: React.FC = () => {
 
           <div className="flex items-center space-x-4 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
             <div className="text-center pr-4 border-r border-slate-200">
-              <span className="text-2xl font-black text-[#242b27]">{product.rating || 4.8}</span>
+              <span className="text-2xl font-black text-[#242b27]">
+                {(reviews.length > 0 || (product.numReviews || 0) > 0) ? (product.rating || 5.0) : '0.0'}
+              </span>
               <span className="text-xs text-slate-400 font-bold block">out of 5</span>
             </div>
             <div>
@@ -442,7 +468,7 @@ export const ProductDetail: React.FC = () => {
                   <Star
                     key={s}
                     className={`w-4 h-4 ${
-                      s <= Math.round(product.rating || 5)
+                      (reviews.length > 0 || (product.numReviews || 0) > 0) && s <= Math.round(product.rating || 5)
                         ? 'fill-amber-400 text-amber-400'
                         : 'text-slate-200'
                     }`}
