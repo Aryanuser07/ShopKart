@@ -70,7 +70,7 @@ export const AdminOrders: React.FC = () => {
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     setUpdatingId(orderId);
     try {
-      await api.put(`/admin/orders/${orderId}/status`, { status: newStatus });
+      await api.put(`/admin/orders/${orderId}/status`, { orderStatus: newStatus, status: newStatus });
       setOrders(prev =>
         prev.map(o => ((o._id || o.id) === orderId ? { ...o, orderStatus: newStatus, status: newStatus } : o))
       );

@@ -179,6 +179,28 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
 
     const formattedOrder = formatOrder(orderDoc);
 
+    // Save order record to memoryStore and persist to data/orders.json
+    memoryStore.orders.unshift({
+      _id: String(formattedOrder._id || formattedOrder.id),
+      id: String(formattedOrder.id || formattedOrder._id),
+      user: { name: user.name, email: user.email },
+      orderItems,
+      shippingAddress,
+      paymentMethod,
+      isPaid,
+      paidAt: isPaid ? new Date().toISOString() : undefined,
+      itemsPrice,
+      shippingPrice,
+      taxPrice,
+      totalPrice,
+      orderStatus: formattedOrder.orderStatus || 'Pending',
+      trackingNumber,
+      estimatedDelivery: estimatedDelivery.toISOString(),
+      trackingHistory: [initialTrackingEvent],
+      createdAt: new Date().toISOString()
+    } as any);
+    memoryStore.saveOrders();
+
     // Send confirmation email
     const recipientEmail = user.email || shippingAddress?.email;
     if (recipientEmail) {
@@ -326,6 +348,17 @@ export const cancelOrder = async (req: AuthRequest, res: Response) => {
 
       await order.save();
 
+      // Sync cancellation in memoryStore
+      const memO = memoryStore.orders.find(o => (o._id || o.id) === id || o.trackingNumber === id);
+      if (memO) {
+        memO.orderStatus = 'Cancelled';
+        (memO as any).fulfillmentStatus = 'Cancelled';
+        (memO as any).paymentStatus = 'Cancelled';
+        if (!memO.trackingHistory) memO.trackingHistory = [];
+        memO.trackingHistory.push({ status: 'Cancelled', location: 'Customer Portal', timestamp: new Date().toISOString(), note: 'Cancelled by customer' });
+        memoryStore.saveOrders();
+      }
+
       return res.json({ order: formatOrder(order), message: 'Order cancelled successfully' });
     } else {
       return res.status(400).json({ message: `Cannot cancel order in status: ${currentStatus}` });
@@ -379,12 +412,43 @@ export const syncOrder = async (req: AuthRequest, res: Response) => {
       };
 
       if (mongoose.Types.ObjectId.isValid(oId)) {
-        await Order.findByIdAndUpdate(oId, payload, { upsert: true, new: true });
+        try { await Order.findByIdAndUpdate(oId, payload, { upsert: true, new: true }); } catch (e) {}
       } else {
-        await Order.create({ ...payload, trackingNumber: o.trackingNumber || 'SK-' + Math.floor(1000000 + Math.random() * 9000000) });
+        try { await Order.create({ ...payload, trackingNumber: o.trackingNumber || 'SK-' + Math.floor(1000000 + Math.random() * 9000000) }); } catch (e) {}
       }
+
+      // Sync in memoryStore and persist to data/orders.json
+      const formattedMem: any = {
+        _id: oId || `ord-${Date.now()}`,
+        id: oId || `ord-${Date.now()}`,
+        user: typeof o.user === 'object' ? o.user : { name: payload.customerName, email: payload.customerEmail },
+        orderItems: o.orderItems || [],
+        shippingAddress: payload.shippingAddress,
+        paymentMethod: payload.paymentMethod,
+        isPaid: payload.isPaid,
+        itemsPrice: payload.itemsPrice,
+        taxPrice: payload.taxPrice,
+        shippingPrice: payload.shippingPrice,
+        totalPrice: payload.totalPrice,
+        orderStatus: payload.orderStatus,
+        fulfillmentStatus: payload.fulfillmentStatus,
+        trackingNumber: payload.trackingNumber,
+        estimatedDelivery: payload.estimatedDelivery,
+        trackingHistory: o.trackingHistory || [{ status: payload.orderStatus, timestamp: new Date().toISOString(), location: 'Distribution Hub', note: 'Order synced' }],
+        createdAt: o.createdAt || new Date().toISOString()
+      };
+
+      const existingIdx = memoryStore.orders.findIndex(m => (m._id || m.id) === oId || (o.trackingNumber && m.trackingNumber === o.trackingNumber));
+      if (existingIdx >= 0) {
+        memoryStore.orders[existingIdx] = { ...memoryStore.orders[existingIdx], ...formattedMem };
+      } else {
+        memoryStore.orders.unshift(formattedMem);
+      }
+
       count++;
     }
+
+    memoryStore.saveOrders();
 
     return res.json({ success: true, count });
   } catch (error: any) {

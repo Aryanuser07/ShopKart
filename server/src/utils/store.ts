@@ -75,7 +75,9 @@ export interface MemoryOrder {
   taxPrice: number;
   shippingPrice: number;
   totalPrice: number;
-  orderStatus: 'Pending' | 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled' | 'Refunded';
+  orderStatus: 'Pending' | 'Processing' | 'Order Placed' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled' | 'Refunded' | string;
+  fulfillmentStatus?: string;
+  paymentStatus?: string;
   trackingNumber: string;
   estimatedDelivery: string;
   trackingHistory: any[];
@@ -283,13 +285,80 @@ export const INITIAL_USERS: MemoryUser[] = [
   }
 ];
 
-export const INITIAL_ORDERS: MemoryOrder[] = [];
+export const INITIAL_ORDERS: MemoryOrder[] = [
+  {
+    _id: 'ord-1001',
+    id: 'ord-1001',
+    user: { name: 'Aryan Sharma', email: 'customer@shopkart.com' },
+    orderItems: [{ title: 'Aura Studio Headphones', quantity: 1, price: 14999 }],
+    shippingAddress: { fullName: 'Aryan Sharma', city: 'Delhi', state: 'Delhi', street: '12 Connaught Place', postalCode: '110001', country: 'India' },
+    paymentMethod: 'Stripe',
+    isPaid: true,
+    paidAt: new Date(Date.now() - 86400000 * 4).toISOString(),
+    itemsPrice: 14999,
+    taxPrice: 2699.82,
+    shippingPrice: 0,
+    totalPrice: 17698.82,
+    orderStatus: 'Delivered',
+    trackingNumber: 'SK-1001998',
+    estimatedDelivery: new Date(Date.now() - 86400000 * 2).toISOString(),
+    trackingHistory: [
+      { status: 'Order Placed', location: 'Delhi, DL', timestamp: new Date(Date.now() - 86400000 * 4).toISOString(), note: 'Order confirmed' },
+      { status: 'Delivered', location: 'Customer Address', timestamp: new Date(Date.now() - 86400000 * 2).toISOString(), note: 'Delivered successfully' }
+    ],
+    createdAt: new Date(Date.now() - 86400000 * 4).toISOString()
+  },
+  {
+    _id: 'ord-1002',
+    id: 'ord-1002',
+    user: { name: 'Priya Patel', email: 'priya@gmail.com' },
+    orderItems: [{ title: 'VaporMax Air Kinetic Sneakers', quantity: 1, price: 8999 }],
+    shippingAddress: { fullName: 'Priya Patel', city: 'Mumbai', state: 'Maharashtra', street: '45 Bandra West', postalCode: '400050', country: 'India' },
+    paymentMethod: 'UPI / GPay',
+    isPaid: true,
+    paidAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+    itemsPrice: 8999,
+    taxPrice: 1619.82,
+    shippingPrice: 0,
+    totalPrice: 10618.82,
+    orderStatus: 'Shipped',
+    trackingNumber: 'SK-1002774',
+    estimatedDelivery: new Date(Date.now() + 86400000 * 2).toISOString(),
+    trackingHistory: [
+      { status: 'Order Placed', location: 'Mumbai, MH', timestamp: new Date(Date.now() - 86400000 * 2).toISOString(), note: 'Order confirmed' },
+      { status: 'Shipped', location: 'ShopKart Hub', timestamp: new Date(Date.now() - 86400000 * 1).toISOString(), note: 'In transit to delivery hub' }
+    ],
+    createdAt: new Date(Date.now() - 86400000 * 2).toISOString()
+  },
+  {
+    _id: 'ord-1003',
+    id: 'ord-1003',
+    user: { name: 'Rahul Mehta', email: 'rahul@gmail.com' },
+    orderItems: [{ title: 'UltraSpeed Pro M2 Mouse', quantity: 2, price: 4499 }],
+    shippingAddress: { fullName: 'Rahul Mehta', city: 'Bengaluru', state: 'Karnataka', street: '88 Indiranagar', postalCode: '560038', country: 'India' },
+    paymentMethod: 'Credit Card',
+    isPaid: true,
+    paidAt: new Date(Date.now() - 3600000 * 6).toISOString(),
+    itemsPrice: 8998,
+    taxPrice: 1619.64,
+    shippingPrice: 0,
+    totalPrice: 10617.64,
+    orderStatus: 'Processing',
+    trackingNumber: 'SK-1003551',
+    estimatedDelivery: new Date(Date.now() + 86400000 * 3).toISOString(),
+    trackingHistory: [
+      { status: 'Order Placed', location: 'Bengaluru, KA', timestamp: new Date(Date.now() - 3600000 * 6).toISOString(), note: 'Order confirmed' }
+    ],
+    createdAt: new Date(Date.now() - 3600000 * 6).toISOString()
+  }
+];
 
 import fs from 'fs';
 import path from 'path';
 
 const DATA_DIR = path.join(__dirname, '../../../data');
 const PRODUCTS_FILE = path.join(DATA_DIR, 'products.json');
+const ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
 
 const loadJsonData = (filePath: string, fallback: any) => {
   try {
@@ -322,11 +391,16 @@ class MemoryStore {
   products: MemoryProduct[] = loadJsonData(PRODUCTS_FILE, [...INITIAL_PRODUCTS]);
   categories: MemoryCategory[] = [...INITIAL_CATEGORIES];
   users: MemoryUser[] = [...INITIAL_USERS];
+  orders: MemoryOrder[] = loadJsonData(ORDERS_FILE, [...INITIAL_ORDERS]);
   reviews: any[] = [];
   otps: Map<string, MemoryOTP> = new Map();
 
   saveProducts() {
     saveJsonData(PRODUCTS_FILE, this.products);
+  }
+
+  saveOrders() {
+    saveJsonData(ORDERS_FILE, this.orders);
   }
 }
 
