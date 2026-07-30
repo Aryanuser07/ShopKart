@@ -62,8 +62,18 @@ export const getProducts = async (req: Request, res: Response) => {
         const total = await Product.countDocuments(queryFilter);
 
         if (dbProducts && dbProducts.length > 0) {
-          const dbIds = new Set(dbProducts.map(p => (p._id || p.id).toString()));
-          const extraMemProducts = memoryStore.products.filter(p => !dbIds.has((p._id || p.id).toString()));
+          const dbKeys = new Set<string>();
+          dbProducts.forEach(p => {
+            if (p._id) dbKeys.add(p._id.toString().toLowerCase());
+            if ((p as any).id) dbKeys.add((p as any).id.toString().toLowerCase());
+            if (p.slug) dbKeys.add(p.slug.toLowerCase());
+            if (p.title) dbKeys.add(p.title.trim().toLowerCase());
+          });
+
+          const extraMemProducts = memoryStore.products.filter(p => {
+            const pKeys = [p._id, p.id, p.slug, p.title?.trim()].filter(Boolean).map(k => k!.toString().toLowerCase());
+            return !pKeys.some(k => dbKeys.has(k));
+          });
           const combined = [...extraMemProducts, ...dbProducts];
           const paginatedCombined = combined.slice(0, limitNum);
 
@@ -291,8 +301,24 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
     }
 
     try {
-      if (mongoose.Types.ObjectId.isValid(id)) {
-        const product = await Product.findByIdAndUpdate(id, updateData, { new: true });
+      if (mongoose.connection.readyState === 1) {
+        const cleanKey = String(id).replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+        const filter: any = mongoose.Types.ObjectId.isValid(id)
+          ? { _id: id }
+          : {
+              $or: [
+                { _id: id },
+                { id: id },
+                { slug: new RegExp('^' + cleanKey + '$', 'i') },
+                { title: new RegExp('^' + cleanKey + '$', 'i') }
+              ]
+            };
+        if (titleToMatch) {
+          filter.$or = filter.$or || [];
+          filter.$or.push({ title: new RegExp('^' + titleToMatch.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&') + '$', 'i') });
+        }
+
+        const product = await Product.findOneAndUpdate(filter, updateData, { new: true });
         if (product) {
           return res.json({ product });
         }

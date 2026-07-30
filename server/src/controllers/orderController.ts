@@ -153,9 +153,20 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
       const qty = Number(item.quantity) || 1;
 
       // Update in DB
-      if (mongoose.Types.ObjectId.isValid(pId)) {
+      if (mongoose.connection.readyState === 1) {
         try {
-          const dbProd = await Product.findById(pId);
+          const cleanTitle = pTitle.trim().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+          const filter: any = mongoose.Types.ObjectId.isValid(pId)
+            ? { _id: pId }
+            : {
+                $or: [
+                  { _id: pId },
+                  { id: pId },
+                  { slug: pId },
+                  { title: new RegExp('^' + cleanTitle + '$', 'i') }
+                ]
+              };
+          const dbProd = await Product.findOne(filter);
           if (dbProd) {
             dbProd.stock = Math.max(0, dbProd.stock - qty);
             await dbProd.save();
