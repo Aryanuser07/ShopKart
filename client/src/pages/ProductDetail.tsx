@@ -57,6 +57,7 @@ export const ProductDetail: React.FC = () => {
   const [commentInput, setCommentInput] = useState<string>('');
   const [submittingReview, setSubmittingReview] = useState<boolean>(false);
   const [reviewMsg, setReviewMsg] = useState<string>('');
+  const [hasDeliveredOrder, setHasDeliveredOrder] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchProductDetails = async () => {
@@ -94,6 +95,36 @@ export const ProductDetail: React.FC = () => {
 
     if (id) fetchProductDetails();
   }, [id]);
+
+  useEffect(() => {
+    const checkDeliveredStatus = async () => {
+      if (!user || !product) {
+        setHasDeliveredOrder(false);
+        return;
+      }
+      try {
+        const res = await api.get('/orders/myorders');
+        const myOrders = res.data.orders || res.data || [];
+        const targetId = (product._id || product.id || product.slug || '').toLowerCase();
+        const targetTitle = (product.title || '').toLowerCase();
+
+        const isVerified = myOrders.some((ord: any) => {
+          const st = String(ord.orderStatus || ord.fulfillmentStatus || '').toLowerCase();
+          if (st !== 'delivered' || !Array.isArray(ord.orderItems)) return false;
+
+          return ord.orderItems.some((item: any) => {
+            const itemPId = String(item.product?._id || item.product?.id || item.product || item.id || '').toLowerCase();
+            const itemTitle = String(item.title || item.name || '').toLowerCase();
+            return itemPId === targetId || itemTitle === targetTitle || (targetTitle && itemTitle.includes(targetTitle));
+          });
+        });
+        setHasDeliveredOrder(isVerified);
+      } catch (e) {
+        setHasDeliveredOrder(false);
+      }
+    };
+    checkDeliveredStatus();
+  }, [user, product]);
 
   const handleJoinWaitlist = (e: React.FormEvent) => {
     e.preventDefault();
@@ -375,6 +406,190 @@ export const ProductDetail: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Customer Reviews & Ratings Section */}
+      <div className="pt-8 border-t border-slate-200 space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-6">
+          <div>
+            <h2 className="text-xl font-extrabold text-[#242b27] tracking-tight flex items-center space-x-2">
+              <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
+              <span>Customer Reviews & Ratings</span>
+            </h2>
+            <p className="text-xs text-slate-500 mt-1 flex items-center space-x-2">
+              <span>Verified ratings from customers who purchased this item</span>
+              <span>•</span>
+              <span className="inline-flex items-center text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full text-[10px]">
+                <UserCheck className="w-3 h-3 mr-1 text-emerald-600" />
+                Verified Buyer Reviews Only
+              </span>
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-4 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
+            <div className="text-center pr-4 border-r border-slate-200">
+              <span className="text-2xl font-black text-[#242b27]">{product.rating || 4.8}</span>
+              <span className="text-xs text-slate-400 font-bold block">out of 5</span>
+            </div>
+            <div>
+              <div className="flex items-center space-x-1">
+                {[1, 2, 3, 4, 5].map(s => (
+                  <Star
+                    key={s}
+                    className={`w-4 h-4 ${
+                      s <= Math.round(product.rating || 5)
+                        ? 'fill-amber-400 text-amber-400'
+                        : 'text-slate-200'
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-xs text-slate-500 font-semibold block mt-1">
+                Based on {reviews.length || product.numReviews || 0} reviews
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Review Form or Verification Banner */}
+        <div className="bg-white rounded-3xl border border-slate-200 p-6 space-y-4 shadow-xs">
+          <h3 className="text-sm font-extrabold text-[#242b27] flex items-center space-x-2">
+            <MessageSquare className="w-4 h-4 text-[#eb9800]" />
+            <span>Write a Product Review</span>
+          </h3>
+
+          {!user ? (
+            <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 text-xs font-semibold text-amber-900 flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Lock className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>Please log in to your account to write a review.</span>
+              </div>
+              <Link to="/profile" className="px-3.5 py-1.5 bg-[#242b27] text-white font-bold rounded-xl hover:bg-black transition">
+                Log In
+              </Link>
+            </div>
+          ) : !hasDeliveredOrder ? (
+            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-xs text-slate-600 flex items-start space-x-3">
+              <div className="p-2 rounded-xl bg-amber-100/70 text-amber-800 shrink-0">
+                <Lock className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="font-extrabold text-slate-900">Verified Purchase Required</h4>
+                <p className="mt-0.5 text-slate-500">
+                  Only customers who have purchased this product and received delivery can leave a review. Order this item to share your feedback!
+                </p>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleReviewSubmit} className="space-y-4 pt-2">
+              {reviewMsg && (
+                <div className={`p-3 rounded-xl text-xs font-bold ${
+                  reviewMsg.includes('published') || reviewMsg.includes('success') || reviewMsg.includes('Thank')
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                    : 'bg-rose-50 text-rose-800 border border-rose-200'
+                }`}>
+                  {reviewMsg}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-2">Select Your Rating</label>
+                <div className="flex items-center space-x-2">
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setRatingInput(star)}
+                      className="p-1 text-amber-400 hover:scale-110 transition"
+                    >
+                      <Star className={`w-6 h-6 ${star <= ratingInput ? 'fill-amber-400' : 'text-slate-200'}`} />
+                    </button>
+                  ))}
+                  <span className="text-xs font-extrabold text-slate-700 ml-2">{ratingInput} Stars</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Your Honest Feedback</label>
+                <textarea
+                  required
+                  rows={3}
+                  placeholder="What did you like or dislike about this product? How is the build quality and performance?"
+                  value={commentInput}
+                  onChange={e => setCommentInput(e.target.value)}
+                  className="w-full bg-[#faf9f6] border border-slate-200 rounded-2xl p-3 text-xs font-medium text-slate-800 focus:outline-none focus:border-[#eb9800]"
+                />
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={submittingReview}
+                  className="px-6 py-2.5 bg-[#242b27] hover:bg-black text-white text-xs font-bold rounded-xl transition disabled:opacity-50 flex items-center space-x-2 shadow-xs"
+                >
+                  <MessageSquare className="w-3.5 h-3.5 text-[#eb9800]" />
+                  <span>{submittingReview ? 'Submitting...' : 'Publish Verified Review'}</span>
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+
+        {/* Existing Reviews List */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-extrabold text-[#242b27]">Customer Feedback ({reviews.length})</h3>
+
+          {reviews.length === 0 ? (
+            <div className="text-center py-8 bg-white rounded-3xl border border-slate-200/80">
+              <Star className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+              <p className="text-xs font-bold text-slate-700">No Customer Reviews Yet</p>
+              <p className="text-[11px] text-slate-400">Be the first verified buyer to leave a review once delivered!</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {reviews.map((rev: any) => (
+                <div key={rev._id || rev.id || Math.random()} className="bg-white rounded-3xl border border-slate-200/80 p-5 space-y-3 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-9 h-9 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center overflow-hidden shrink-0">
+                        {rev.userAvatar ? (
+                          <img src={rev.userAvatar} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          (rev.userName || rev.name || 'U').charAt(0).toUpperCase()
+                        )}
+                      </div>
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs font-extrabold text-[#242b27]">{rev.userName || rev.name || 'Verified Buyer'}</span>
+                          <span className="inline-flex items-center text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                            <CheckCircle2 className="w-3 h-3 mr-1 text-emerald-600" />
+                            Verified Buyer
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          {rev.createdAt ? new Date(rev.createdAt).toLocaleDateString() : 'Recently'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-1">
+                      {[1, 2, 3, 4, 5].map(s => (
+                        <Star
+                          key={s}
+                          className={`w-3.5 h-3.5 ${
+                            s <= rev.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-200'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-slate-700 font-medium leading-relaxed">{rev.comment}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
