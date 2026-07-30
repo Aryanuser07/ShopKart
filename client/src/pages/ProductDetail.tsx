@@ -729,6 +729,8 @@ export const ProductDetail: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
+
     </div>
   );
 };
