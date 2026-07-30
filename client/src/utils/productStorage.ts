@@ -74,19 +74,9 @@ export const deleteProductFromStorage = (prodOrId: Product | string) => {
 };
 
 export const mergeProductsWithCustom = (apiProducts: Product[]): Product[] => {
-  if (!apiProducts || apiProducts.length === 0) {
-    const custom = getCustomProducts();
-    const deletedSet = new Set(getDeletedProductIds().map(id => id.toLowerCase()));
-    return custom.filter(p => {
-      const keys = [p._id, p.id, p.slug, p.title?.trim()].filter(Boolean).map(k => k!.toString().toLowerCase());
-      return !keys.some(k => deletedSet.has(k));
-    });
-  }
-
   const custom = getCustomProducts();
   const deletedSet = new Set(getDeletedProductIds().map(id => id.toLowerCase()));
 
-  // 1. Sync local custom products with live API stock values
   const customMap = new Map<string, Product>();
   custom.forEach(p => {
     [p._id, p.id, p.slug].filter(Boolean).forEach(k => {
@@ -97,23 +87,35 @@ export const mergeProductsWithCustom = (apiProducts: Product[]): Product[] => {
     }
   });
 
-  apiProducts.forEach(apiP => {
-    const keys = [apiP._id, apiP.id, apiP.slug, apiP.title?.trim()].filter(Boolean).map(k => k!.toString().toLowerCase());
-    for (const k of keys) {
-      const existingCustom = customMap.get(k);
-      if (existingCustom) {
-        existingCustom.stock = apiP.stock; // Sync live server stock!
-      }
-    }
-  });
-
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(custom));
-  } catch (e) {
-    // Silent
+  if (!apiProducts || apiProducts.length === 0) {
+    return custom.filter(p => {
+      const keys = [p._id, p.id, p.slug, p.title?.trim()].filter(Boolean).map(k => k!.toString().toLowerCase());
+      return !keys.some(k => deletedSet.has(k));
+    });
   }
 
-  // 2. Prioritize live API products and add custom-only products
+  // Merge API products with local custom overrides so admin stock edits are never overwritten by fallback seeds
+  const mergedApi = apiProducts.map(apiP => {
+    const keys = [apiP._id, apiP.id, apiP.slug, apiP.title?.trim()].filter(Boolean).map(k => k!.toString().toLowerCase());
+    let customMatch: Product | undefined;
+    for (const k of keys) {
+      const match = customMap.get(k);
+      if (match) {
+        customMatch = match;
+        break;
+      }
+    }
+
+    if (customMatch) {
+      return {
+        ...apiP,
+        ...customMatch,
+        stock: typeof customMatch.stock === 'number' ? customMatch.stock : apiP.stock
+      };
+    }
+    return apiP;
+  });
+
   const apiKeys = new Set<string>();
   apiProducts.forEach(p => {
     [p._id, p.id, p.slug, p.title?.trim()].filter(Boolean).forEach(k => {
@@ -121,7 +123,7 @@ export const mergeProductsWithCustom = (apiProducts: Product[]): Product[] => {
     });
   });
 
-  const filterApi = apiProducts.filter(p => {
+  const filterApi = mergedApi.filter(p => {
     const keys = [p._id, p.id, p.slug, p.title?.trim()].filter(Boolean).map(k => k!.toString().toLowerCase());
     return !keys.some(k => deletedSet.has(k));
   });
