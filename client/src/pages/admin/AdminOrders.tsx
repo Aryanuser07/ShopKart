@@ -5,41 +5,7 @@ import api from '../../services/api';
 import { InView } from '../../components/core/in-view';
 import { useCurrency } from '../../utils/formatCurrency';
 
-const FALLBACK_ORDERS = [
-  {
-    _id: 'ord-1001',
-    id: 'ord-1001',
-    user: { name: 'Aryan Sharma', email: 'customer@shopkart.com' },
-    orderItems: [{ title: 'Aura Studio Headphones', quantity: 1, price: 14999 }],
-    paymentMethod: 'Stripe',
-    isPaid: true,
-    totalPrice: 16499,
-    orderStatus: 'Delivered',
-    createdAt: new Date(Date.now() - 86400000 * 4).toISOString()
-  },
-  {
-    _id: 'ord-1002',
-    id: 'ord-1002',
-    user: { name: 'Priya Patel', email: 'priya@gmail.com' },
-    orderItems: [{ title: 'VaporMax Air Kinetic Sneakers', quantity: 1, price: 8999 }],
-    paymentMethod: 'UPI / GPay',
-    isPaid: true,
-    totalPrice: 8999,
-    orderStatus: 'Shipped',
-    createdAt: new Date(Date.now() - 86400000 * 2).toISOString()
-  },
-  {
-    _id: 'ord-1003',
-    id: 'ord-1003',
-    user: { name: 'Rahul Mehta', email: 'rahul@gmail.com' },
-    orderItems: [{ title: 'UltraSpeed Pro M2 Mouse', quantity: 2, price: 4499 }],
-    paymentMethod: 'Credit Card',
-    isPaid: true,
-    totalPrice: 8998,
-    orderStatus: 'Processing',
-    createdAt: new Date(Date.now() - 3600000 * 6).toISOString()
-  }
-];
+const FALLBACK_ORDERS: any[] = [];
 
 export const AdminOrders: React.FC = () => {
   const [orders, setOrders] = useState<any[]>([]);
