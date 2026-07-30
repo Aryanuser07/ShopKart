@@ -16,7 +16,10 @@ import {
   CheckCircle2,
   X,
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  Lock,
+  MessageSquare,
+  UserCheck
 } from 'lucide-react';
 import api from '../services/api';
 import { Product, Review } from '../types';

@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import { Product } from '../models/Product';
 import { Category } from '../models/Category';
 import { Review } from '../models/Review';
+import { Order } from '../models/Order';
 import { AuthRequest } from '../middleware/auth';
 import { memoryStore } from '../utils/store';
 import { sendRestockAlertEmail } from '../utils/emailService';
@@ -383,26 +384,128 @@ export const addReview = async (req: AuthRequest, res: Response) => {
     if (!user) return res.status(401).json({ message: 'Authentication required' });
     if (!rating || !comment) return res.status(400).json({ message: 'Rating and comment are required' });
 
+    const targetProdId = String(id).toLowerCase();
+    const userIdStr = String(user.id || user._id || '').toLowerCase();
+    const userEmailStr = String(user.email || '').toLowerCase();
+
+    // 1. Verify if user has a DELIVERED order for this product
+    let hasDeliveredPurchase = false;
+
+    // Check memoryStore orders
+    for (const ord of memoryStore.orders) {
+      const ordUser = String(ord.user || (ord as any).userId || '').toLowerCase();
+      const ordEmail = String((ord as any).email || '').toLowerCase();
+      const isUserMatch = (userIdStr && ordUser === userIdStr) || (userEmailStr && ordEmail === userEmailStr);
+
+      const st = String(ord.orderStatus || ord.fulfillmentStatus || '').toLowerCase();
+      const isDelivered = st === 'delivered';
+
+      if (isUserMatch && isDelivered && Array.isArray(ord.orderItems)) {
+        const itemMatch = ord.orderItems.some((item: any) => {
+          const itemPId = String(item.product?._id || item.product?.id || item.product || item.id || '').toLowerCase();
+          const itemTitle = String(item.title || item.name || '').toLowerCase();
+          const itemSlug = String(item.slug || '').toLowerCase();
+          return itemPId === targetProdId || itemSlug === targetProdId || (itemTitle && targetProdId.includes(itemTitle));
+        });
+        if (itemMatch) {
+          hasDeliveredPurchase = true;
+          break;
+        }
+      }
+    }
+
+    // Check MongoDB orders if not found in memoryStore
+    if (!hasDeliveredPurchase && mongoose.connection.readyState === 1) {
+      try {
+        const dbOrders = await Order.find({
+          $and: [
+            { $or: [{ user: user.id || user._id }, { email: user.email }] },
+            { $or: [{ orderStatus: 'Delivered' }, { fulfillmentStatus: 'Delivered' }] }
+          ]
+        });
+
+        for (const ord of dbOrders) {
+          if (Array.isArray(ord.orderItems)) {
+            const itemMatch = ord.orderItems.some((item: any) => {
+              const itemPId = String(item.product?._id || item.product?.id || item.product || item.id || '').toLowerCase();
+              const itemTitle = String(item.title || item.name || '').toLowerCase();
+              const itemSlug = String(item.slug || '').toLowerCase();
+              return itemPId === targetProdId || itemSlug === targetProdId || (itemTitle && targetProdId.includes(itemTitle));
+            });
+            if (itemMatch) {
+              hasDeliveredPurchase = true;
+              break;
+            }
+          }
+        }
+      } catch (dbErr) {
+        // Fallback
+      }
+    }
+
+    if (!hasDeliveredPurchase) {
+      return res.status(403).json({
+        message: 'Only customers who have purchased and received (Delivered) this item can leave a review.'
+      });
+    }
+
+    // 2. Create and persist review
     const newReview = {
       _id: 'rev-' + Date.now(),
       product: id,
       user: user.id || user._id,
-      userName: user.name,
-      userAvatar: user.avatar,
+      userName: user.name || 'Verified Buyer',
+      userAvatar: user.avatar || '',
       rating: Number(rating),
       comment,
+      isVerifiedBuyer: true,
       createdAt: new Date().toISOString()
     };
 
     memoryStore.reviews.unshift(newReview);
+    memoryStore.saveReviews();
 
-    // Update product rating stats in memory
-    const memProd = memoryStore.products.find(p => p._id === id || p.id === id);
+    if (mongoose.connection.readyState === 1) {
+      try {
+        await Review.create({
+          product: id,
+          user: user.id || user._id,
+          name: user.name || 'Verified Buyer',
+          rating: Number(rating),
+          comment
+        });
+      } catch (err) {
+        // Silent fallback
+      }
+    }
+
+    // 3. Update product rating stats in memory, disk (data/products.json), and MongoDB
+    const titleToMatch = (id || '').toLowerCase();
+    const memProd = memoryStore.products.find(p =>
+      p._id === id || p.id === id || p.slug === id || (p.title && p.title.toLowerCase().includes(titleToMatch))
+    );
+
     if (memProd) {
-      const prodReviews = memoryStore.reviews.filter(r => r.product === id);
+      const prodReviews = memoryStore.reviews.filter(r => r.product === id || r.product === memProd._id || r.product === memProd.id);
       const avgRating = prodReviews.reduce((acc, curr) => acc + curr.rating, 0) / prodReviews.length;
       memProd.rating = Number(avgRating.toFixed(1));
       memProd.numReviews = prodReviews.length;
+      memoryStore.saveProducts();
+    }
+
+    if (mongoose.connection.readyState === 1) {
+      try {
+        const prodReviews = await Review.find({ product: id });
+        if (prodReviews && prodReviews.length > 0) {
+          const avg = prodReviews.reduce((acc, curr) => acc + curr.rating, 0) / prodReviews.length;
+          await Product.findByIdAndUpdate(id, {
+            rating: Number(avg.toFixed(1)),
+            numReviews: prodReviews.length
+          });
+        }
+      } catch (err) {
+        // Silent fallback
+      }
     }
 
     return res.status(201).json({ review: newReview, message: 'Review submitted successfully' });

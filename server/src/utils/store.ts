@@ -293,6 +293,7 @@ import path from 'path';
 const DATA_DIR = path.join(__dirname, '../../../data');
 const PRODUCTS_FILE = path.join(DATA_DIR, 'products.json');
 const ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
+const REVIEWS_FILE = path.join(DATA_DIR, 'reviews.json');
 
 const loadJsonData = (filePath: string, fallback: any) => {
   try {
@@ -326,7 +327,7 @@ class MemoryStore {
   categories: MemoryCategory[] = [...INITIAL_CATEGORIES];
   users: MemoryUser[] = [...INITIAL_USERS];
   orders: MemoryOrder[] = loadJsonData(ORDERS_FILE, [...INITIAL_ORDERS]);
-  reviews: any[] = [];
+  reviews: any[] = loadJsonData(REVIEWS_FILE, []);
   otps: Map<string, MemoryOTP> = new Map();
 
   saveProducts() {
@@ -335,6 +336,10 @@ class MemoryStore {
 
   saveOrders() {
     saveJsonData(ORDERS_FILE, this.orders);
+  }
+
+  saveReviews() {
+    saveJsonData(REVIEWS_FILE, this.reviews);
   }
 }
 
