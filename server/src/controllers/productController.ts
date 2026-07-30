@@ -137,24 +137,86 @@ export const getProducts = async (req: Request, res: Response) => {
 export const getProductById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const cleanId = String(id).toLowerCase().trim();
 
-    try {
-      const product = await Product.findById(id);
-      if (product) {
-        const reviews = await Review.find({ product: product._id }).sort({ createdAt: -1 });
-        return res.json({ product, reviews });
+    let productDoc: any = null;
+    let dbReviews: any[] = [];
+
+    // 1. Try finding in MongoDB
+    if (mongoose.connection.readyState === 1) {
+      try {
+        const cleanTitle = cleanId.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+        const filter: any = mongoose.Types.ObjectId.isValid(id)
+          ? { _id: id }
+          : {
+              $or: [
+                { _id: id },
+                { id: id },
+                { slug: id },
+                { title: new RegExp('^' + cleanTitle + '$', 'i') }
+              ]
+            };
+        productDoc = await Product.findOne(filter);
+        if (productDoc) {
+          dbReviews = await Review.find({
+            $or: [
+              { product: productDoc._id },
+              { product: String(productDoc._id) },
+              { product: productDoc.id },
+              { product: productDoc.slug },
+              { product: cleanId }
+            ]
+          }).sort({ createdAt: -1 });
+        }
+      } catch (dbErr) {
+        // Fallback
       }
-    } catch (dbErr) {
-      // Memory Store fallback
     }
 
-    const memProd = memoryStore.products.find(p => p._id === id || p.id === id || p.slug === id);
-    if (memProd) {
-      const reviews = memoryStore.reviews.filter(r => r.product === memProd._id || r.product === memProd.id);
-      return res.json({ product: memProd, reviews });
+    // 2. Fallback to memoryStore
+    const memProd = memoryStore.products.find(p => {
+      const pId = String(p._id || p.id || '').toLowerCase();
+      const pSlug = String(p.slug || '').toLowerCase();
+      const pTitle = String(p.title || '').toLowerCase();
+      return pId === cleanId || pSlug === cleanId || pTitle === cleanId || cleanId.includes(pTitle);
+    });
+
+    const targetProd = productDoc || memProd;
+    if (!targetProd) {
+      return res.status(404).json({ message: 'Product not found' });
     }
 
-    return res.status(404).json({ message: 'Product not found' });
+    // Collect all reviews from memoryStore + DB matching any product key
+    const targetKeys = new Set([
+      String(targetProd._id || '').toLowerCase(),
+      String(targetProd.id || '').toLowerCase(),
+      String(targetProd.slug || '').toLowerCase(),
+      String(targetProd.title || '').toLowerCase(),
+      cleanId
+    ].filter(Boolean));
+
+    const memReviews = memoryStore.reviews.filter(r => {
+      const rProd = String(r.product || '').toLowerCase();
+      return targetKeys.has(rProd);
+    });
+
+    // Merge and deduplicate reviews
+    const reviewMap = new Map<string, any>();
+    dbReviews.forEach(r => {
+      reviewMap.set(String(r._id || r.id), r);
+    });
+    memReviews.forEach(r => {
+      const rId = String(r._id || r.id || `${r.user}-${r.createdAt}`);
+      if (!reviewMap.has(rId)) {
+        reviewMap.set(rId, r);
+      }
+    });
+
+    const combinedReviews = Array.from(reviewMap.values()).sort(
+      (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    );
+
+    return res.json({ product: targetProd, reviews: combinedReviews });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }
@@ -393,10 +455,14 @@ export const addReview = async (req: AuthRequest, res: Response) => {
 
     // Check memoryStore orders
     for (const ord of memoryStore.orders) {
-      const ordUser = String(ord.user?._id || ord.user?.id || ord.user || (ord as any).userId || '').toLowerCase();
-      const ordEmail = String((ord as any).email || ord.user?.email || '').toLowerCase();
-      const isUserMatch = (userIdStr && ordUser === userIdStr) || (userEmailStr && ordEmail === userEmailStr);
+      const ordUser = String(
+        typeof ord.user === 'object' ? (ord.user._id || ord.user.id || '') : (ord.user || (ord as any).userId || '')
+      ).toLowerCase();
+      const ordEmail = String(
+        (ord as any).customerEmail || (ord as any).email || (typeof ord.user === 'object' ? ord.user.email : '') || (ord.shippingAddress?.email || '')
+      ).toLowerCase();
 
+      const isUserMatch = (userIdStr && ordUser === userIdStr) || (userEmailStr && ordEmail === userEmailStr);
       const st = String(ord.orderStatus || ord.fulfillmentStatus || '').toLowerCase();
       const isCancelled = st === 'cancelled' || st === 'refunded';
 
@@ -406,8 +472,8 @@ export const addReview = async (req: AuthRequest, res: Response) => {
           const itemTitle = String(item.title || item.name || '').toLowerCase();
           const itemSlug = String(item.slug || '').toLowerCase();
           return (
-            itemPId === targetProdId ||
-            itemSlug === targetProdId ||
+            (targetProdId && itemPId === targetProdId) ||
+            (targetProdId && itemSlug === targetProdId) ||
             (itemTitle && targetProdId && (itemTitle.includes(targetProdId) || targetProdId.includes(itemTitle)))
           );
         });
@@ -421,9 +487,16 @@ export const addReview = async (req: AuthRequest, res: Response) => {
     // Check MongoDB orders if not found in memoryStore
     if (!hasValidPurchase && mongoose.connection.readyState === 1) {
       try {
+        const cleanEmail = userEmailStr.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
         const dbOrders = await Order.find({
           $and: [
-            { $or: [{ user: user.id || user._id }, { email: user.email }] },
+            {
+              $or: [
+                { user: user.id || user._id },
+                { customerEmail: new RegExp(`^${cleanEmail}$`, 'i') },
+                { 'shippingAddress.email': new RegExp(`^${cleanEmail}$`, 'i') }
+              ]
+            },
             { orderStatus: { $ne: 'Cancelled' } }
           ]
         });
@@ -435,8 +508,8 @@ export const addReview = async (req: AuthRequest, res: Response) => {
               const itemTitle = String(item.title || item.name || '').toLowerCase();
               const itemSlug = String(item.slug || '').toLowerCase();
               return (
-                itemPId === targetProdId ||
-                itemSlug === targetProdId ||
+                (targetProdId && itemPId === targetProdId) ||
+                (targetProdId && itemSlug === targetProdId) ||
                 (itemTitle && targetProdId && (itemTitle.includes(targetProdId) || targetProdId.includes(itemTitle)))
               );
             });

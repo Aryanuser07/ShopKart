@@ -194,7 +194,12 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
     memoryStore.orders.unshift({
       _id: String(formattedOrder._id || formattedOrder.id),
       id: String(formattedOrder.id || formattedOrder._id),
-      user: { name: user.name, email: user.email },
+      user: {
+        _id: String(user.id || (user as any)._id || ''),
+        id: String(user.id || (user as any)._id || ''),
+        name: user.name,
+        email: user.email
+      },
       orderItems,
       shippingAddress,
       paymentMethod,
