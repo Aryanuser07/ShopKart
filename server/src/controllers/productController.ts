@@ -561,28 +561,71 @@ export const addReview = async (req: AuthRequest, res: Response) => {
     }
 
     // 3. Update product rating stats in memory, disk (data/products.json), and MongoDB
-    const titleToMatch = (id || '').toLowerCase();
-    const memProd = memoryStore.products.find(p =>
-      p._id === id || p.id === id || p.slug === id || (p.title && p.title.toLowerCase().includes(titleToMatch))
-    );
+    const targetProdIdStr = String(id).toLowerCase().trim();
+    const memProd = memoryStore.products.find(p => {
+      const pId = String(p._id || p.id || '').toLowerCase();
+      const pSlug = String(p.slug || '').toLowerCase();
+      const pTitle = String(p.title || '').toLowerCase();
+      return pId === targetProdIdStr || pSlug === targetProdIdStr || pTitle === targetProdIdStr || targetProdIdStr.includes(pTitle);
+    });
 
-    if (memProd) {
-      const prodReviews = memoryStore.reviews.filter(r => r.product === id || r.product === memProd._id || r.product === memProd.id);
-      const avgRating = prodReviews.reduce((acc, curr) => acc + curr.rating, 0) / prodReviews.length;
-      memProd.rating = Number(avgRating.toFixed(1));
-      memProd.numReviews = prodReviews.length;
+    const targetKeys = new Set([
+      targetProdIdStr,
+      String(memProd?._id || '').toLowerCase(),
+      String(memProd?.id || '').toLowerCase(),
+      String(memProd?.slug || '').toLowerCase(),
+      String(memProd?.title || '').toLowerCase()
+    ].filter(Boolean));
+
+    const allMatchingMemReviews = memoryStore.reviews.filter(r => targetKeys.has(String(r.product || '').toLowerCase()));
+    if (allMatchingMemReviews.length > 0) {
+      const avg = allMatchingMemReviews.reduce((sum, r) => sum + Number(r.rating || 5), 0) / allMatchingMemReviews.length;
+      const formattedAvg = Number(avg.toFixed(1));
+      const count = allMatchingMemReviews.length;
+
+      if (memProd) {
+        memProd.rating = formattedAvg;
+        memProd.numReviews = count;
+      }
+
+      memoryStore.products.forEach(p => {
+        const pId = String(p._id || p.id || '').toLowerCase();
+        const pSlug = String(p.slug || '').toLowerCase();
+        const pTitle = String(p.title || '').toLowerCase();
+        if (targetKeys.has(pId) || targetKeys.has(pSlug) || targetKeys.has(pTitle)) {
+          p.rating = formattedAvg;
+          p.numReviews = count;
+        }
+      });
       memoryStore.saveProducts();
     }
 
     if (mongoose.connection.readyState === 1) {
       try {
-        const prodReviews = await Review.find({ product: id });
-        if (prodReviews && prodReviews.length > 0) {
-          const avg = prodReviews.reduce((acc, curr) => acc + curr.rating, 0) / prodReviews.length;
-          await Product.findByIdAndUpdate(id, {
-            rating: Number(avg.toFixed(1)),
-            numReviews: prodReviews.length
-          });
+        const keyArray = Array.from(targetKeys);
+        const dbReviews = await Review.find({ product: { $in: keyArray } });
+        if (dbReviews && dbReviews.length > 0) {
+          const avg = dbReviews.reduce((sum, r) => sum + Number(r.rating || 5), 0) / dbReviews.length;
+          const formattedAvg = Number(avg.toFixed(1));
+          const count = dbReviews.length;
+
+          const cleanTitle = targetProdIdStr.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+          await Product.updateMany(
+            {
+              $or: [
+                { _id: mongoose.Types.ObjectId.isValid(id) ? id : undefined },
+                { id },
+                { slug: id },
+                { title: new RegExp('^' + cleanTitle + '$', 'i') }
+              ].filter(Boolean)
+            },
+            {
+              $set: {
+                rating: formattedAvg,
+                numReviews: count
+              }
+            }
+          );
         }
       } catch (err) {
         // Silent fallback

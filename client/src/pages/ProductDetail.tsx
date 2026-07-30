@@ -231,8 +231,13 @@ export const ProductDetail: React.FC = () => {
     year: 'numeric'
   });
 
+  const liveNumReviews = reviews.length > 0 ? reviews.length : (product.numReviews || 0);
+  const liveAvgRating = reviews.length > 0
+    ? Number((reviews.reduce((sum, r) => sum + Number(r.rating || 5), 0) / reviews.length).toFixed(1))
+    : (product.rating || 0);
+
   return (
-    <InView className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12 bg-[#faf9f6]">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12 bg-[#faf9f6]">
 
       {/* Waitlist Success Toast */}
       {waitlistToast && (
@@ -311,12 +316,12 @@ export const ProductDetail: React.FC = () => {
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
-                    className={`w-4 h-4 ${i < Math.floor(product.rating) ? 'fill-amber-500' : 'text-slate-300'}`}
+                    className={`w-4 h-4 ${liveNumReviews > 0 && i < Math.floor(liveAvgRating) ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`}
                   />
                 ))}
               </div>
-              <span className="text-xs font-bold text-slate-900">{product.rating}</span>
-              <span className="text-xs text-slate-400">({product.numReviews} customer reviews)</span>
+              <span className="text-xs font-bold text-slate-900">{liveNumReviews > 0 ? liveAvgRating : '0.0'}</span>
+              <span className="text-xs text-slate-400">({liveNumReviews} customer {liveNumReviews === 1 ? 'review' : 'reviews'})</span>
             </div>
 
             {/* Price Banner */}
@@ -724,9 +729,7 @@ export const ProductDetail: React.FC = () => {
             </form>
           </div>
         </div>
-      )}
-
-    </InView>
+    </div>
   );
 };
 
