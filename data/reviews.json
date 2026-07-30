@@ -1,0 +1,24 @@
+[
+  {
+    "_id": "rev-101",
+    "product": "prod-1",
+    "user": "usr-customer-1",
+    "userName": "Ananya Sharma",
+    "userAvatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
+    "rating": 5,
+    "comment": "Exceptional active noise cancellation! Battery easily lasts through long work days.",
+    "isVerifiedBuyer": true,
+    "createdAt": "2026-07-28T10:15:00.000Z"
+  },
+  {
+    "_id": "rev-102",
+    "product": "prod-4",
+    "user": "usr-customer-2",
+    "userName": "Rohan Verma",
+    "userAvatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+    "rating": 5,
+    "comment": "The titanium casing feels super premium and dual-frequency GPS tracking is spot on during runs.",
+    "isVerifiedBuyer": true,
+    "createdAt": "2026-07-29T14:30:00.000Z"
+  }
+]
