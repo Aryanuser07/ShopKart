@@ -388,39 +388,43 @@ export const addReview = async (req: AuthRequest, res: Response) => {
     const userIdStr = String(user.id || user._id || '').toLowerCase();
     const userEmailStr = String(user.email || '').toLowerCase();
 
-    // 1. Verify if user has a DELIVERED order for this product
-    let hasDeliveredPurchase = false;
+    // 1. Verify if user has a valid purchase order for this product
+    let hasValidPurchase = false;
 
     // Check memoryStore orders
     for (const ord of memoryStore.orders) {
-      const ordUser = String(ord.user || (ord as any).userId || '').toLowerCase();
-      const ordEmail = String((ord as any).email || '').toLowerCase();
+      const ordUser = String(ord.user?._id || ord.user?.id || ord.user || (ord as any).userId || '').toLowerCase();
+      const ordEmail = String((ord as any).email || ord.user?.email || '').toLowerCase();
       const isUserMatch = (userIdStr && ordUser === userIdStr) || (userEmailStr && ordEmail === userEmailStr);
 
       const st = String(ord.orderStatus || ord.fulfillmentStatus || '').toLowerCase();
-      const isDelivered = st === 'delivered';
+      const isCancelled = st === 'cancelled' || st === 'refunded';
 
-      if (isUserMatch && isDelivered && Array.isArray(ord.orderItems)) {
+      if (isUserMatch && !isCancelled && Array.isArray(ord.orderItems)) {
         const itemMatch = ord.orderItems.some((item: any) => {
           const itemPId = String(item.product?._id || item.product?.id || item.product || item.id || '').toLowerCase();
           const itemTitle = String(item.title || item.name || '').toLowerCase();
           const itemSlug = String(item.slug || '').toLowerCase();
-          return itemPId === targetProdId || itemSlug === targetProdId || (itemTitle && targetProdId.includes(itemTitle));
+          return (
+            itemPId === targetProdId ||
+            itemSlug === targetProdId ||
+            (itemTitle && targetProdId && (itemTitle.includes(targetProdId) || targetProdId.includes(itemTitle)))
+          );
         });
         if (itemMatch) {
-          hasDeliveredPurchase = true;
+          hasValidPurchase = true;
           break;
         }
       }
     }
 
     // Check MongoDB orders if not found in memoryStore
-    if (!hasDeliveredPurchase && mongoose.connection.readyState === 1) {
+    if (!hasValidPurchase && mongoose.connection.readyState === 1) {
       try {
         const dbOrders = await Order.find({
           $and: [
             { $or: [{ user: user.id || user._id }, { email: user.email }] },
-            { $or: [{ orderStatus: 'Delivered' }, { fulfillmentStatus: 'Delivered' }] }
+            { orderStatus: { $ne: 'Cancelled' } }
           ]
         });
 
@@ -430,10 +434,14 @@ export const addReview = async (req: AuthRequest, res: Response) => {
               const itemPId = String(item.product?._id || item.product?.id || item.product || item.id || '').toLowerCase();
               const itemTitle = String(item.title || item.name || '').toLowerCase();
               const itemSlug = String(item.slug || '').toLowerCase();
-              return itemPId === targetProdId || itemSlug === targetProdId || (itemTitle && targetProdId.includes(itemTitle));
+              return (
+                itemPId === targetProdId ||
+                itemSlug === targetProdId ||
+                (itemTitle && targetProdId && (itemTitle.includes(targetProdId) || targetProdId.includes(itemTitle)))
+              );
             });
             if (itemMatch) {
-              hasDeliveredPurchase = true;
+              hasValidPurchase = true;
               break;
             }
           }
@@ -443,9 +451,9 @@ export const addReview = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    if (!hasDeliveredPurchase) {
+    if (!hasValidPurchase) {
       return res.status(403).json({
-        message: 'Only customers who have purchased and received (Delivered) this item can leave a review.'
+        message: 'Only verified customers who have purchased this item can leave a review.'
       });
     }
 

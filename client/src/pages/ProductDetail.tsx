@@ -110,12 +110,16 @@ export const ProductDetail: React.FC = () => {
 
         const isVerified = myOrders.some((ord: any) => {
           const st = String(ord.orderStatus || ord.fulfillmentStatus || '').toLowerCase();
-          if (st !== 'delivered' || !Array.isArray(ord.orderItems)) return false;
+          if (st === 'cancelled' || st === 'refunded' || !Array.isArray(ord.orderItems)) return false;
 
           return ord.orderItems.some((item: any) => {
             const itemPId = String(item.product?._id || item.product?.id || item.product || item.id || '').toLowerCase();
             const itemTitle = String(item.title || item.name || '').toLowerCase();
-            return itemPId === targetId || itemTitle === targetTitle || (targetTitle && itemTitle.includes(targetTitle));
+            return (
+              itemPId === targetId ||
+              itemTitle === targetTitle ||
+              (targetTitle && itemTitle && (targetTitle.includes(itemTitle) || itemTitle.includes(targetTitle)))
+            );
           });
         });
         setHasDeliveredOrder(isVerified);
