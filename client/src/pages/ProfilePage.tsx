@@ -153,11 +153,18 @@ export const ProfilePage: React.FC = () => {
 
           // Find server version if available to get latest admin-updated status
           const serverMatch = serverOrders.find(s => {
-            const sId = String(s._id || s.id || '').toLowerCase();
-            return sId === idStr || sId.endsWith(idStr) || idStr.endsWith(sId);
+            const sId = String(s._id || s.id || (s as any).orderId || '').toLowerCase();
+            return sId === idStr || sId.endsWith(idStr) || idStr.endsWith(sId) || sId.includes(idStr) || idStr.includes(sId);
           });
 
-          const finalOrder = serverMatch ? { ...o, ...serverMatch } : o;
+          const finalOrder = serverMatch
+            ? {
+                ...o,
+                ...serverMatch,
+                orderStatus: serverMatch.orderStatus || (serverMatch as any).fulfillmentStatus || o.orderStatus,
+                fulfillmentStatus: (serverMatch as any).fulfillmentStatus || serverMatch.orderStatus || o.fulfillmentStatus
+              }
+            : o;
           userOrders.push(finalOrder);
         }
       });

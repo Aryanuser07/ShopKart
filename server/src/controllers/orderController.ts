@@ -387,12 +387,45 @@ export const cancelOrder = async (req: AuthRequest, res: Response) => {
 export const syncOrder = async (req: AuthRequest, res: Response) => {
   try {
     const { order, orders } = req.body;
+    const statusRank: Record<string, number> = {
+      'Pending': 1,
+      'Order Placed': 1,
+      'Processing': 2,
+      'Shipped': 3,
+      'Out for Delivery': 4,
+      'Delivered': 5,
+      'Cancelled': 6,
+      'Refunded': 6
+    };
+
     const ordersToSync = Array.isArray(orders) ? orders : order ? [order] : [];
 
     let count = 0;
     for (const o of ordersToSync) {
       if (!o) continue;
       const oId = String(o._id || o.id || o.orderId || '');
+
+      const targetKey = oId.toLowerCase();
+      const existingIdx = memoryStore.orders.findIndex(m => {
+        const mId = String(m._id || m.id || '').toLowerCase();
+        const mTrack = String(m.trackingNumber || '').toLowerCase();
+        return (mId && mId === targetKey) ||
+               (mTrack && mTrack === targetKey) ||
+               (mId && targetKey && (mId.endsWith(targetKey) || targetKey.endsWith(mId)));
+      });
+
+      const existingMem = existingIdx >= 0 ? memoryStore.orders[existingIdx] : null;
+
+      const incomingStatus = o.orderStatus || o.fulfillmentStatus || 'Processing';
+      const existingStatus = existingMem ? (existingMem.orderStatus || (existingMem as any).fulfillmentStatus) : null;
+
+      const currentRank = existingStatus ? (statusRank[existingStatus] || 0) : 0;
+      const incomingRank = statusRank[incomingStatus] || 0;
+
+      // Preserve existing advanced status if it was updated by Admin (e.g. Delivered, Shipped, Cancelled)
+      const finalStatus = (existingStatus && currentRank >= incomingRank && existingStatus !== 'Pending' && existingStatus !== 'Order Placed')
+        ? existingStatus
+        : incomingStatus;
 
       const mongoUserId = mongoose.Types.ObjectId.isValid(String(o.user?.id || o.user?._id || o.user))
         ? o.user?.id || o.user?._id || o.user
@@ -415,30 +448,43 @@ export const syncOrder = async (req: AuthRequest, res: Response) => {
         orderItems: formattedOrderItems,
         shippingAddress: o.shippingAddress || {},
         paymentMethod: o.paymentMethod || 'Stripe',
-        isPaid: o.isPaid ?? true,
+        isPaid: existingMem ? existingMem.isPaid : (o.isPaid ?? true),
         totalPrice: o.totalPrice || o.amount || 0,
         itemsPrice: o.itemsPrice || o.totalPrice || 0,
         taxPrice: o.taxPrice || 0,
         shippingPrice: o.shippingPrice || 0,
-        orderStatus: o.orderStatus || o.fulfillmentStatus || 'Processing',
-        fulfillmentStatus: o.fulfillmentStatus || o.orderStatus || 'Processing',
-        paymentStatus: o.paymentStatus || (o.isPaid ? 'Paid' : 'Pending'),
-        trackingNumber: o.trackingNumber || 'SK-' + Math.floor(1000000 + Math.random() * 9000000),
-        estimatedDelivery: o.estimatedDelivery || new Date(Date.now() + 86400000 * 4)
+        orderStatus: finalStatus,
+        fulfillmentStatus: finalStatus,
+        paymentStatus: finalStatus === 'Refunded' ? 'Refunded' : (existingMem ? (existingMem as any).paymentStatus : (o.paymentStatus || (o.isPaid ? 'Paid' : 'Pending'))),
+        trackingNumber: existingMem?.trackingNumber || o.trackingNumber || 'SK-' + Math.floor(1000000 + Math.random() * 9000000),
+        estimatedDelivery: o.estimatedDelivery || existingMem?.estimatedDelivery || new Date(Date.now() + 86400000 * 4)
       };
 
       if (mongoose.Types.ObjectId.isValid(oId)) {
         try { await Order.findByIdAndUpdate(oId, payload, { upsert: true, new: true }); } catch (e) {}
       } else {
-        try { await Order.create({ ...payload, trackingNumber: o.trackingNumber || 'SK-' + Math.floor(1000000 + Math.random() * 9000000) }); } catch (e) {}
+        try { await Order.create({ ...payload, trackingNumber: payload.trackingNumber }); } catch (e) {}
       }
 
-      // Sync in memoryStore and persist to data/orders.json
+      // Merge tracking history
+      const existingHistory = existingMem?.trackingHistory || [];
+      const incomingHistory = o.trackingHistory || [];
+      const combinedHistory = [...existingHistory, ...incomingHistory];
+      const historyMap = new Map<string, any>();
+      combinedHistory.forEach((h: any) => {
+        if (h && (h.status || h.note)) {
+          const key = `${h.status}-${h.timestamp || h.note}`;
+          if (!historyMap.has(key)) {
+            historyMap.set(key, h);
+          }
+        }
+      });
+
       const formattedMem: any = {
-        _id: oId || `ord-${Date.now()}`,
-        id: oId || `ord-${Date.now()}`,
+        _id: oId || existingMem?._id || `ord-${Date.now()}`,
+        id: oId || existingMem?.id || `ord-${Date.now()}`,
         user: typeof o.user === 'object' ? o.user : { name: payload.customerName, email: payload.customerEmail },
-        orderItems: o.orderItems || [],
+        orderItems: o.orderItems && o.orderItems.length > 0 ? o.orderItems : (existingMem?.orderItems || []),
         shippingAddress: payload.shippingAddress,
         paymentMethod: payload.paymentMethod,
         isPaid: payload.isPaid,
@@ -446,17 +492,22 @@ export const syncOrder = async (req: AuthRequest, res: Response) => {
         taxPrice: payload.taxPrice,
         shippingPrice: payload.shippingPrice,
         totalPrice: payload.totalPrice,
-        orderStatus: payload.orderStatus,
-        fulfillmentStatus: payload.fulfillmentStatus,
+        orderStatus: finalStatus,
+        fulfillmentStatus: finalStatus,
+        paymentStatus: payload.paymentStatus,
         trackingNumber: payload.trackingNumber,
         estimatedDelivery: payload.estimatedDelivery,
-        trackingHistory: o.trackingHistory || [{ status: payload.orderStatus, timestamp: new Date().toISOString(), location: 'Distribution Hub', note: 'Order synced' }],
-        createdAt: o.createdAt || new Date().toISOString()
+        trackingHistory: Array.from(historyMap.values()),
+        createdAt: o.createdAt || existingMem?.createdAt || new Date().toISOString()
       };
 
-      const existingIdx = memoryStore.orders.findIndex(m => (m._id || m.id) === oId || (o.trackingNumber && m.trackingNumber === o.trackingNumber));
       if (existingIdx >= 0) {
-        memoryStore.orders[existingIdx] = { ...memoryStore.orders[existingIdx], ...formattedMem };
+        memoryStore.orders[existingIdx] = {
+          ...memoryStore.orders[existingIdx],
+          ...formattedMem,
+          orderStatus: finalStatus,
+          fulfillmentStatus: finalStatus
+        };
       } else {
         memoryStore.orders.unshift(formattedMem);
       }

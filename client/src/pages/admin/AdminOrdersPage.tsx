@@ -213,9 +213,16 @@ export const AdminOrdersPage: React.FC = () => {
       let updated = false;
       localOrders.forEach((o: any) => {
         const oId = String(o._id || o.id || o.orderId || '').toLowerCase();
-        if (oId === targetId || targetId.endsWith(oId) || oId.endsWith(targetId)) {
+        if (oId === targetId || targetId.endsWith(oId) || oId.endsWith(targetId) || oId.includes(targetId) || targetId.includes(oId)) {
           o.orderStatus = newStatus;
           o.fulfillmentStatus = newStatus;
+          if (!o.trackingHistory) o.trackingHistory = [];
+          o.trackingHistory.push({
+            status: newStatus,
+            timestamp: new Date().toISOString(),
+            location: 'ShopKart Distribution Hub',
+            note: `Status updated to ${newStatus} by Admin`
+          });
           if (newStatus === 'Refunded') {
             o.paymentStatus = 'Refunded';
           }
