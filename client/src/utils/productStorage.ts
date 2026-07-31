@@ -4,6 +4,15 @@ import api from '../services/api';
 const STORAGE_KEY = 'shopkart_custom_products';
 const DELETED_KEY = 'shopkart_deleted_product_ids';
 
+const normalizeKey = (str: string | null | undefined): string => {
+  if (!str) return '';
+  return str
+    .toLowerCase()
+    .trim()
+    .replace(/[\u2010-\u2015\u2212\uFE58\uFE63\uFF0D]/g, '-')
+    .replace(/[^a-z0-9]/g, '');
+};
+
 export const getCustomProducts = (): Product[] => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -23,17 +32,17 @@ export const getDeletedProductIds = (): string[] => {
 };
 
 export const saveCustomProduct = (prod: Product): Product[] => {
-  const keys = [prod._id, prod.id, prod.slug, prod.title?.trim()].filter(Boolean).map(k => k!.toString().toLowerCase());
+  const keys = [prod._id, prod.id, prod.slug, prod.title].filter(Boolean).map(k => normalizeKey(k!.toString()));
   const existing = getCustomProducts();
   const filtered = existing.filter(p => {
-    const pKeys = [p._id, p.id, p.slug, p.title?.trim()].filter(Boolean).map(k => k!.toString().toLowerCase());
+    const pKeys = [p._id, p.id, p.slug, p.title].filter(Boolean).map(k => normalizeKey(k!.toString()));
     return !pKeys.some(pk => keys.includes(pk));
   });
   const updated = [prod, ...filtered];
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 
   // Remove from deleted list if re-added
-  const deleted = getDeletedProductIds().filter(id => !keys.includes(id.toLowerCase()));
+  const deleted = getDeletedProductIds().filter(id => !keys.includes(normalizeKey(id)));
   localStorage.setItem(DELETED_KEY, JSON.stringify(deleted));
 
   // Sync custom product to backend memoryStore for cross-browser visibility
@@ -46,18 +55,18 @@ export const saveCustomProduct = (prod: Product): Product[] => {
 export const deleteProductFromStorage = (prodOrId: Product | string) => {
   const idsToDelete = new Set<string>();
   if (typeof prodOrId === 'string') {
-    if (prodOrId) idsToDelete.add(prodOrId.toLowerCase());
+    if (prodOrId) idsToDelete.add(normalizeKey(prodOrId));
   } else if (prodOrId) {
-    if (prodOrId._id) idsToDelete.add(prodOrId._id.toString().toLowerCase());
-    if (prodOrId.id) idsToDelete.add(prodOrId.id.toString().toLowerCase());
-    if (prodOrId.slug) idsToDelete.add(prodOrId.slug.toString().toLowerCase());
-    if (prodOrId.title) idsToDelete.add(prodOrId.title.trim().toLowerCase());
+    if (prodOrId._id) idsToDelete.add(normalizeKey(prodOrId._id.toString()));
+    if (prodOrId.id) idsToDelete.add(normalizeKey(prodOrId.id.toString()));
+    if (prodOrId.slug) idsToDelete.add(normalizeKey(prodOrId.slug.toString()));
+    if (prodOrId.title) idsToDelete.add(normalizeKey(prodOrId.title));
   }
 
   if (idsToDelete.size === 0) return;
 
   const custom = getCustomProducts().filter(p => {
-    const pKeys = [p._id, p.id, p.slug, p.title?.trim()].filter(Boolean).map(k => k!.toString().toLowerCase());
+    const pKeys = [p._id, p.id, p.slug, p.title].filter(Boolean).map(k => normalizeKey(k!.toString()));
     return !pKeys.some(pk => idsToDelete.has(pk));
   });
   localStorage.setItem(STORAGE_KEY, JSON.stringify(custom));
@@ -82,10 +91,10 @@ export const deductCustomProductStock = (items: { product: any; quantity: number
     const p = item.product;
     if (!p) return;
     const qty = Number(item.quantity) || 1;
-    const keys = [p._id, p.id, p.slug, p.title?.trim()].filter(Boolean).map(k => k!.toString().toLowerCase());
+    const keys = [p._id, p.id, p.slug, p.title].filter(Boolean).map(k => normalizeKey(k!.toString()));
 
     const match = custom.find(c => {
-      const cKeys = [c._id, c.id, c.slug, c.title?.trim()].filter(Boolean).map(k => k!.toString().toLowerCase());
+      const cKeys = [c._id, c.id, c.slug, c.title].filter(Boolean).map(k => normalizeKey(k!.toString()));
       return cKeys.some(ck => keys.includes(ck));
     });
 
@@ -107,33 +116,31 @@ export const deductCustomProductStock = (items: { product: any; quantity: number
 
 export const mergeProductsWithCustom = (apiProducts: Product[]): Product[] => {
   const custom = getCustomProducts();
-  const deletedSet = new Set(getDeletedProductIds().map(id => id.toLowerCase()));
+  const deletedSet = new Set(getDeletedProductIds().map(id => normalizeKey(id)));
 
   const customMap = new Map<string, Product>();
   custom.forEach(p => {
-    [p._id, p.id, p.slug].filter(Boolean).forEach(k => {
-      customMap.set(k!.toString().toLowerCase(), p);
+    [p._id, p.id, p.slug, p.title].filter(Boolean).forEach(k => {
+      const norm = normalizeKey(k!.toString());
+      if (norm) customMap.set(norm, p);
     });
-    if (p.title) {
-      customMap.set(p.title.trim().toLowerCase(), p);
-    }
   });
 
   if (!apiProducts || apiProducts.length === 0) {
     return custom.filter(p => {
-      const keys = [p._id, p.id, p.slug, p.title?.trim()].filter(Boolean).map(k => k!.toString().toLowerCase());
+      const keys = [p._id, p.id, p.slug, p.title].filter(Boolean).map(k => normalizeKey(k!.toString()));
       return !keys.some(k => deletedSet.has(k));
     });
   }
 
   // Merge API products with local custom overrides, prioritizing live server deducted stock
   const mergedApi = apiProducts.map(apiP => {
-    const keys = [apiP._id, apiP.id, apiP.slug, apiP.title?.trim()].filter(Boolean).map(k => k!.toString().toLowerCase());
+    const rawKeys = [apiP._id, apiP.id, apiP.slug, apiP.title].filter(Boolean).map(k => k!.toString());
     let customMatch: Product | undefined;
-    for (const k of keys) {
-      const match = customMap.get(k);
-      if (match) {
-        customMatch = match;
+    for (const k of rawKeys) {
+      const norm = normalizeKey(k);
+      if (norm && customMap.has(norm)) {
+        customMatch = customMap.get(norm);
         break;
       }
     }
@@ -178,18 +185,19 @@ export const mergeProductsWithCustom = (apiProducts: Product[]): Product[] => {
 
   const apiKeys = new Set<string>();
   apiProducts.forEach(p => {
-    [p._id, p.id, p.slug, p.title?.trim()].filter(Boolean).forEach(k => {
-      apiKeys.add(k!.toString().toLowerCase());
+    [p._id, p.id, p.slug, p.title].filter(Boolean).forEach(k => {
+      const norm = normalizeKey(k!.toString());
+      if (norm) apiKeys.add(norm);
     });
   });
 
   const filterApi = mergedApi.filter(p => {
-    const keys = [p._id, p.id, p.slug, p.title?.trim()].filter(Boolean).map(k => k!.toString().toLowerCase());
+    const keys = [p._id, p.id, p.slug, p.title].filter(Boolean).map(k => normalizeKey(k!.toString()));
     return !keys.some(k => deletedSet.has(k));
   });
 
   const customOnly = custom.filter(p => {
-    const keys = [p._id, p.id, p.slug, p.title?.trim()].filter(Boolean).map(k => k!.toString().toLowerCase());
+    const keys = [p._id, p.id, p.slug, p.title].filter(Boolean).map(k => normalizeKey(k!.toString()));
     const isDeleted = keys.some(k => deletedSet.has(k));
     const isInApi = keys.some(k => apiKeys.has(k));
     return !isDeleted && !isInApi;
