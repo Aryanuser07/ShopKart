@@ -722,7 +722,12 @@ export const syncProduct = async (req: Request, res: Response) => {
       };
 
       if (existingIndex >= 0) {
-        memoryStore.products[existingIndex] = { ...memoryStore.products[existingIndex], ...formattedProduct };
+        const existingMem = memoryStore.products[existingIndex];
+        memoryStore.products[existingIndex] = {
+          ...existingMem,
+          ...formattedProduct,
+          stock: typeof p.stock !== 'undefined' && p.stock !== null && p.stock !== '' ? Number(p.stock) : existingMem.stock
+        };
       } else {
         memoryStore.products.unshift(formattedProduct);
       }

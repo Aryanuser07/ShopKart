@@ -154,14 +154,14 @@ export const mergeProductsWithCustom = (apiProducts: Product[]): Product[] => {
         mergedRating = apiRating;
       }
 
-      const mergedStock = typeof apiP.stock === 'number' ? apiP.stock : (customMatch.stock ?? 0);
+      const mergedStock = typeof customMatch.stock === 'number' ? customMatch.stock : (typeof apiP.stock === 'number' ? apiP.stock : 0);
       customMatch.stock = mergedStock;
       customMatch.rating = mergedRating;
       customMatch.numReviews = mergedNumReviews;
 
       return {
-        ...customMatch,
         ...apiP,
+        ...customMatch,
         rating: mergedRating,
         numReviews: mergedNumReviews,
         stock: mergedStock
