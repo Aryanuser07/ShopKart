@@ -92,6 +92,18 @@ export const Products: React.FC = () => {
         merged = merged.filter(p => p.rating >= selectedRating);
       }
 
+      if (sortOption === 'price-asc') {
+        merged.sort((a, b) => a.price - b.price);
+      } else if (sortOption === 'price-desc') {
+        merged.sort((a, b) => b.price - a.price);
+      } else if (sortOption === 'rating') {
+        merged.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      } else if (sortOption === 'popular') {
+        merged.sort((a, b) => (b.numReviews || 0) - (a.numReviews || 0));
+      } else if (sortOption === 'newest') {
+        merged.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+      }
+
       setProducts(merged);
       setTotalPages(res.data.pages || 1);
       setTotalProducts(merged.length);
