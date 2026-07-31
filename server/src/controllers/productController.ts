@@ -723,10 +723,17 @@ export const syncProduct = async (req: Request, res: Response) => {
 
       if (existingIndex >= 0) {
         const existingMem = memoryStore.products[existingIndex];
+        const mergedRating = (existingMem.numReviews && existingMem.numReviews > 0)
+          ? existingMem.rating
+          : (p.numReviews && p.numReviews > 0 ? Number(p.rating) : (existingMem.rating || Number(p.rating) || 4.5));
+        const mergedNumReviews = Math.max(existingMem.numReviews || 0, Number(p.numReviews) || 0);
+
         memoryStore.products[existingIndex] = {
           ...existingMem,
           ...formattedProduct,
-          stock: typeof p.stock !== 'undefined' && p.stock !== null && p.stock !== '' ? Number(p.stock) : existingMem.stock
+          stock: typeof p.stock !== 'undefined' && p.stock !== null && p.stock !== '' ? Number(p.stock) : existingMem.stock,
+          rating: mergedRating,
+          numReviews: mergedNumReviews
         };
       } else {
         memoryStore.products.unshift(formattedProduct);

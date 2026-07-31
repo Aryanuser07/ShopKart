@@ -146,12 +146,12 @@ export const mergeProductsWithCustom = (apiProducts: Product[]): Product[] => {
 
       const mergedNumReviews = Math.max(apiReviews, customReviews);
       let mergedRating = apiRating;
-      if (customReviews > apiReviews && customRating > 0) {
-        mergedRating = customRating;
-      } else if (apiRating === 0 && customRating > 0) {
+      if (customReviews > 0 && customRating > 0) {
         mergedRating = customRating;
       } else if (apiRating > 0) {
         mergedRating = apiRating;
+      } else if (customRating > 0) {
+        mergedRating = customRating;
       }
 
       const mergedStock = typeof customMatch.stock === 'number' ? customMatch.stock : (typeof apiP.stock === 'number' ? apiP.stock : 0);
