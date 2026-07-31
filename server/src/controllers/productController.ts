@@ -320,12 +320,13 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
 
     // Always update memoryStore.products first to ensure consistency across memoryStore
     const titleToMatch = (updateData.title || '').trim().toLowerCase();
-    const memProd = memoryStore.products.find(p =>
-      p._id === id ||
-      p.id === id ||
-      p.slug === id ||
-      (titleToMatch && p.title && p.title.trim().toLowerCase().includes(titleToMatch))
-    );
+    const cleanId = String(id).toLowerCase().trim();
+    const memProd = memoryStore.products.find(p => {
+      const pId = String(p._id || p.id || '').toLowerCase();
+      const pSlug = String(p.slug || '').toLowerCase();
+      const pTitle = String(p.title || '').toLowerCase();
+      return pId === cleanId || pSlug === cleanId || pTitle === cleanId || (titleToMatch && (pTitle.includes(titleToMatch) || titleToMatch.includes(pTitle)));
+    });
 
     if (memProd) {
       const oldStock = memProd.stock || 0;
@@ -577,15 +578,18 @@ export const addReview = async (req: AuthRequest, res: Response) => {
       String(memProd?.title || '').toLowerCase()
     ].filter(Boolean));
 
+    let finalRating = 5.0;
+    let finalCount = 1;
+
     const allMatchingMemReviews = memoryStore.reviews.filter(r => targetKeys.has(String(r.product || '').toLowerCase()));
     if (allMatchingMemReviews.length > 0) {
       const avg = allMatchingMemReviews.reduce((sum, r) => sum + Number(r.rating || 5), 0) / allMatchingMemReviews.length;
-      const formattedAvg = Number(avg.toFixed(1));
-      const count = allMatchingMemReviews.length;
+      finalRating = Number(avg.toFixed(1));
+      finalCount = allMatchingMemReviews.length;
 
       if (memProd) {
-        memProd.rating = formattedAvg;
-        memProd.numReviews = count;
+        memProd.rating = finalRating;
+        memProd.numReviews = finalCount;
       }
 
       memoryStore.products.forEach(p => {
@@ -593,8 +597,8 @@ export const addReview = async (req: AuthRequest, res: Response) => {
         const pSlug = String(p.slug || '').toLowerCase();
         const pTitle = String(p.title || '').toLowerCase();
         if (targetKeys.has(pId) || targetKeys.has(pSlug) || targetKeys.has(pTitle)) {
-          p.rating = formattedAvg;
-          p.numReviews = count;
+          p.rating = finalRating;
+          p.numReviews = finalCount;
         }
       });
       memoryStore.saveProducts();
@@ -606,8 +610,8 @@ export const addReview = async (req: AuthRequest, res: Response) => {
         const dbReviews = await Review.find({ product: { $in: keyArray } });
         if (dbReviews && dbReviews.length > 0) {
           const avg = dbReviews.reduce((sum, r) => sum + Number(r.rating || 5), 0) / dbReviews.length;
-          const formattedAvg = Number(avg.toFixed(1));
-          const count = dbReviews.length;
+          finalRating = Number(avg.toFixed(1));
+          finalCount = dbReviews.length;
 
           const cleanTitle = targetProdIdStr.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
           await Product.updateMany(
@@ -621,8 +625,8 @@ export const addReview = async (req: AuthRequest, res: Response) => {
             },
             {
               $set: {
-                rating: formattedAvg,
-                numReviews: count
+                rating: finalRating,
+                numReviews: finalCount
               }
             }
           );
@@ -632,7 +636,12 @@ export const addReview = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    return res.status(201).json({ review: newReview, message: 'Review submitted successfully' });
+    return res.status(201).json({
+      review: newReview,
+      rating: finalRating,
+      numReviews: finalCount,
+      message: 'Review submitted successfully'
+    });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }

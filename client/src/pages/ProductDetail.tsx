@@ -28,7 +28,7 @@ import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { InView } from '../components/core/in-view';
 import { motion } from 'framer-motion';
-import { getCustomProducts } from '../utils/productStorage';
+import { getCustomProducts, saveCustomProduct } from '../utils/productStorage';
 import { useCurrency } from '../utils/formatCurrency';
 
 export const ProductDetail: React.FC = () => {
@@ -59,41 +59,50 @@ export const ProductDetail: React.FC = () => {
   const [reviewMsg, setReviewMsg] = useState<string>('');
   const [hasDeliveredOrder, setHasDeliveredOrder] = useState<boolean>(false);
 
-  useEffect(() => {
-    const fetchProductDetails = async () => {
-      setLoading(true);
-      try {
-        const res = await api.get(`/products/${id}`);
-        const currentProd = res.data.product;
-        setProduct(currentProd);
-        setReviews(res.data.reviews || []);
-        if (currentProd?.images?.length > 0) {
-          setSelectedImage(currentProd.images[0]);
-        }
-
-        // Fetch Similar Products
-        const allRes = await api.get('/products');
-        const allProds: Product[] = allRes.data.products || [];
-        const similar = allProds.filter(p =>
-          (p._id !== currentProd._id && p.id !== currentProd.id) &&
-          (p.category === currentProd.category || p.brand === currentProd.brand)
-        ).slice(0, 4);
-        setSimilarProducts(similar);
-      } catch (err) {
-        const custom = getCustomProducts();
-        const found = custom.find(p => p._id === id || p.id === id || p.slug === id);
-        if (found) {
-          setProduct(found);
-          if (found.images?.length > 0) setSelectedImage(found.images[0]);
-          const similar = custom.filter(p => (p._id !== found._id && p.id !== found.id) && p.category === found.category).slice(0, 4);
-          setSimilarProducts(similar);
-        }
-      } finally {
-        setLoading(false);
+  const fetchProductDetails = async (showLoader = true) => {
+    if (showLoader) setLoading(true);
+    try {
+      const res = await api.get(`/products/${id}`);
+      const currentProd = res.data.product;
+      setProduct(currentProd);
+      setReviews(res.data.reviews || []);
+      if (currentProd?.images?.length > 0) {
+        setSelectedImage(prev => prev || currentProd.images[0]);
       }
-    };
 
-    if (id) fetchProductDetails();
+      // Fetch Similar Products
+      const allRes = await api.get('/products');
+      const allProds: Product[] = allRes.data.products || [];
+      const similar = allProds.filter(p =>
+        (p._id !== currentProd._id && p.id !== currentProd.id) &&
+        (p.category === currentProd.category || p.brand === currentProd.brand)
+      ).slice(0, 4);
+      setSimilarProducts(similar);
+    } catch (err) {
+      const custom = getCustomProducts();
+      const found = custom.find(p => p._id === id || p.id === id || p.slug === id);
+      if (found) {
+        setProduct(found);
+        if (found.images?.length > 0) setSelectedImage(prev => prev || found.images[0]);
+        const similar = custom.filter(p => (p._id !== found._id && p.id !== found.id) && p.category === found.category).slice(0, 4);
+        setSimilarProducts(similar);
+      }
+    } finally {
+      if (showLoader) setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (id) fetchProductDetails(true);
+
+    const handleProductsUpdated = () => {
+      if (id) fetchProductDetails(false);
+    };
+    window.addEventListener('shopkart-products-updated', handleProductsUpdated);
+
+    return () => {
+      window.removeEventListener('shopkart-products-updated', handleProductsUpdated);
+    };
   }, [id]);
 
   useEffect(() => {
@@ -188,7 +197,25 @@ export const ProductDetail: React.FC = () => {
         rating: ratingInput,
         comment: commentInput
       });
-      setReviews(prev => [res.data.review, ...prev]);
+
+      const newReview = res.data.review;
+      const updatedReviews = [newReview, ...reviews];
+      setReviews(updatedReviews);
+
+      const newCount = res.data.numReviews ?? updatedReviews.length;
+      const newAvg = res.data.rating ?? Number((updatedReviews.reduce((sum, r) => sum + Number(r.rating || 5), 0) / updatedReviews.length).toFixed(1));
+
+      if (product) {
+        const updatedProd: Product = {
+          ...product,
+          rating: newAvg,
+          numReviews: newCount
+        };
+        setProduct(updatedProd);
+        saveCustomProduct(updatedProd);
+        window.dispatchEvent(new Event('shopkart-products-updated'));
+      }
+
       setCommentInput('');
       setReviewMsg('✅ Thank you! Your review has been published.');
       setTimeout(() => setReviewMsg(''), 4000);

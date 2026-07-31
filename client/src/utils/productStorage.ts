@@ -139,13 +139,32 @@ export const mergeProductsWithCustom = (apiProducts: Product[]): Product[] => {
     }
 
     if (customMatch) {
-      if (typeof apiP.stock === 'number') {
-        customMatch.stock = apiP.stock; // Sync live deducted stock!
+      const apiReviews = Number(apiP.numReviews || 0);
+      const customReviews = Number(customMatch.numReviews || 0);
+      const apiRating = Number(apiP.rating || 0);
+      const customRating = Number(customMatch.rating || 0);
+
+      const mergedNumReviews = Math.max(apiReviews, customReviews);
+      let mergedRating = apiRating;
+      if (customReviews > apiReviews && customRating > 0) {
+        mergedRating = customRating;
+      } else if (apiRating === 0 && customRating > 0) {
+        mergedRating = customRating;
+      } else if (apiRating > 0) {
+        mergedRating = apiRating;
       }
+
+      const mergedStock = typeof apiP.stock === 'number' ? apiP.stock : (customMatch.stock ?? 0);
+      customMatch.stock = mergedStock;
+      customMatch.rating = mergedRating;
+      customMatch.numReviews = mergedNumReviews;
+
       return {
         ...customMatch,
         ...apiP,
-        stock: typeof apiP.stock === 'number' ? apiP.stock : customMatch.stock
+        rating: mergedRating,
+        numReviews: mergedNumReviews,
+        stock: mergedStock
       };
     }
     return apiP;

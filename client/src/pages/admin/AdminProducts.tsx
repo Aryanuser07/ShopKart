@@ -290,8 +290,17 @@ export const AdminProducts: React.FC = () => {
       stock: newStock
     };
 
+    const targetKeys = new Set(
+      [restockModalProduct._id, restockModalProduct.id, restockModalProduct.slug, restockModalProduct.title]
+        .filter(Boolean)
+        .map(k => String(k).toLowerCase())
+    );
+
     saveCustomProduct(updated);
-    setProducts(prev => prev.map(item => ((item._id || item.id) === prodId ? updated : item)));
+    setProducts(prev => prev.map(item => {
+      const itemKeys = [item._id, item.id, item.slug, item.title].filter(Boolean).map(k => String(k).toLowerCase());
+      return itemKeys.some(k => targetKeys.has(k)) ? updated : item;
+    }));
 
     try {
       await api.put(`/products/${prodId}`, {

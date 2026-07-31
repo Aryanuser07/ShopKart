@@ -15,6 +15,8 @@ import Text3DFlip from '../components/Text3DFlip';
 import { InView } from '../components/core/in-view';
 import InViewImagesGrid from '../components/InViewImagesGrid';
 
+import { mergeProductsWithCustom } from '../utils/productStorage';
+
 interface HomeProps {
   onOpenAssistant?: (query?: string) => void;
 }
@@ -24,18 +26,31 @@ export const Home: React.FC<HomeProps> = ({ onOpenAssistant }) => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchFeaturedProducts = async () => {
+    try {
+      const prodRes = await api.get('/products?limit=8');
+      const merged = mergeProductsWithCustom(prodRes.data.products || []);
+      setFeaturedProducts(merged);
+    } catch (err) {
+      setFeaturedProducts(mergeProductsWithCustom([]));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const prodRes = await api.get('/products?limit=8');
-        setFeaturedProducts(prodRes.data.products || []);
-      } catch (err) {
-        // Handled
-      } finally {
-        setLoading(false);
-      }
+    fetchFeaturedProducts();
+
+    const handleProductsUpdated = () => {
+      fetchFeaturedProducts();
     };
-    fetchData();
+    window.addEventListener('shopkart-products-updated', handleProductsUpdated);
+    window.addEventListener('focus', handleProductsUpdated);
+
+    return () => {
+      window.removeEventListener('shopkart-products-updated', handleProductsUpdated);
+      window.removeEventListener('focus', handleProductsUpdated);
+    };
   }, []);
 
   return (

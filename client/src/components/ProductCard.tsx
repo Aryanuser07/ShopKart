@@ -80,10 +80,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div>
           <div className="flex items-center space-x-1.5 mb-1.5">
             <div className="flex items-center text-amber-500">
-              <Star className={`w-3.5 h-3.5 ${product.numReviews && product.numReviews > 0 ? 'fill-amber-400 text-amber-400' : 'text-slate-300 fill-transparent'}`} />
+              <Star className={`w-3.5 h-3.5 ${(product.rating && product.rating > 0) || (product.numReviews && product.numReviews > 0) ? 'fill-amber-400 text-amber-400' : 'text-slate-300 fill-transparent'}`} />
             </div>
             <span className="text-xs font-bold text-slate-800">
-              {product.numReviews && product.numReviews > 0 ? product.rating : '0.0'}
+              {product.rating && product.rating > 0 ? Number(product.rating).toFixed(1) : '0.0'}
             </span>
             <span className="text-[11px] text-slate-400">({product.numReviews || 0})</span>
             <span className="text-[11px] text-slate-400">• {product.brand}</span>
