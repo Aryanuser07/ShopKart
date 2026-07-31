@@ -8,6 +8,34 @@ import { AuthRequest } from '../middleware/auth';
 import { memoryStore } from '../utils/store';
 import { sendRestockAlertEmail } from '../utils/emailService';
 
+const enrichProductWithReviews = (p: any) => {
+  if (!p) return p;
+  const targetObj = typeof p.toObject === 'function' ? p.toObject() : { ...p };
+
+  const keys = new Set([
+    String(targetObj._id || '').toLowerCase(),
+    String(targetObj.id || '').toLowerCase(),
+    String(targetObj.slug || '').toLowerCase(),
+    String(targetObj.title || '').trim().toLowerCase()
+  ].filter(Boolean));
+
+  const matchingReviews = memoryStore.reviews.filter(r => {
+    const rProd = String(r.product || '').toLowerCase().trim();
+    return keys.has(rProd) || (targetObj.title && rProd.includes(targetObj.title.trim().toLowerCase()));
+  });
+
+  if (matchingReviews.length > 0) {
+    const avg = matchingReviews.reduce((sum, r) => sum + Number(r.rating || 5), 0) / matchingReviews.length;
+    targetObj.rating = Number(avg.toFixed(1));
+    targetObj.numReviews = matchingReviews.length;
+  } else {
+    targetObj.rating = targetObj.rating && targetObj.rating > 0 ? Number(targetObj.rating) : 5.0;
+    targetObj.numReviews = targetObj.numReviews || 0;
+  }
+
+  return targetObj;
+};
+
 export const getProducts = async (req: Request, res: Response) => {
   try {
     const { search, category, minPrice, maxPrice, rating, sort } = req.query;
@@ -76,7 +104,7 @@ export const getProducts = async (req: Request, res: Response) => {
             return !pKeys.some(k => dbKeys.has(k));
           });
           const combined = [...extraMemProducts, ...dbProducts];
-          const paginatedCombined = combined.slice(0, limitNum);
+          const paginatedCombined = combined.slice(0, limitNum).map(enrichProductWithReviews);
 
           return res.json({
             products: paginatedCombined,
@@ -91,7 +119,7 @@ export const getProducts = async (req: Request, res: Response) => {
     }
 
     // Memory Store filtering
-    let items = [...memoryStore.products];
+    let items = memoryStore.products.map(enrichProductWithReviews);
 
     if (search) {
       const s = String(search).toLowerCase();
@@ -101,7 +129,7 @@ export const getProducts = async (req: Request, res: Response) => {
           p.description.toLowerCase().includes(s) ||
           p.brand.toLowerCase().includes(s) ||
           p.category.toLowerCase().includes(s) ||
-          p.tags.some(t => t.toLowerCase().includes(s))
+          (p.tags && Array.isArray(p.tags) && p.tags.some((t: any) => String(t).toLowerCase().includes(s)))
       );
     }
 
@@ -216,7 +244,17 @@ export const getProductById = async (req: Request, res: Response) => {
       (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
     );
 
-    return res.json({ product: targetProd, reviews: combinedReviews });
+    const enrichedProd = typeof targetProd.toObject === 'function' ? targetProd.toObject() : { ...targetProd };
+    if (combinedReviews.length > 0) {
+      const avg = combinedReviews.reduce((sum, r) => sum + Number(r.rating || 5), 0) / combinedReviews.length;
+      enrichedProd.rating = Number(avg.toFixed(1));
+      enrichedProd.numReviews = combinedReviews.length;
+    } else {
+      enrichedProd.rating = enrichedProd.rating && enrichedProd.rating > 0 ? Number(enrichedProd.rating) : 5.0;
+      enrichedProd.numReviews = enrichedProd.numReviews || 0;
+    }
+
+    return res.json({ product: enrichedProd, reviews: combinedReviews });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }
