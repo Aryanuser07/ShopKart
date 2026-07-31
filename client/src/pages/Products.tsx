@@ -61,7 +61,7 @@ export const Products: React.FC = () => {
       const params = new URLSearchParams();
       if (search) params.append('search', search);
       if (selectedCategory !== 'All') params.append('category', selectedCategory);
-      if (maxPrice < 30000) params.append('maxPrice', maxPrice.toString());
+      params.append('maxPrice', maxPrice.toString());
       if (selectedRating > 0) params.append('rating', selectedRating.toString());
       if (sortOption) params.append('sort', sortOption);
       params.append('page', page.toString());
@@ -81,25 +81,26 @@ export const Products: React.FC = () => {
 
       if (search) {
         const s = search.toLowerCase();
-        merged = merged.filter(p => p.title.toLowerCase().includes(s) || p.category.toLowerCase().includes(s));
+        merged = merged.filter(p => (p.title || '').toLowerCase().includes(s) || (p.category || '').toLowerCase().includes(s));
       }
 
-      if (maxPrice < 30000) {
-        merged = merged.filter(p => p.price <= maxPrice);
-      }
+      // Strict price filter
+      merged = merged.filter(p => Number(p.price || 0) <= maxPrice);
 
+      // Strict rating filter
       if (selectedRating > 0) {
-        merged = merged.filter(p => p.rating >= selectedRating);
+        merged = merged.filter(p => Number(p.rating || 0) >= selectedRating);
       }
 
+      // Explicit numeric sorting
       if (sortOption === 'price-asc') {
-        merged.sort((a, b) => a.price - b.price);
+        merged.sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
       } else if (sortOption === 'price-desc') {
-        merged.sort((a, b) => b.price - a.price);
+        merged.sort((a, b) => Number(b.price || 0) - Number(a.price || 0));
       } else if (sortOption === 'rating') {
-        merged.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        merged.sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
       } else if (sortOption === 'popular') {
-        merged.sort((a, b) => (b.numReviews || 0) - (a.numReviews || 0));
+        merged.sort((a, b) => Number(b.numReviews || 0) - Number(a.numReviews || 0));
       } else if (sortOption === 'newest') {
         merged.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
       }
@@ -112,6 +113,10 @@ export const Products: React.FC = () => {
       if (selectedCategory !== 'All') {
         const targetCategoryStr = selectedCategory.toLowerCase().trim();
         merged = merged.filter(p => (p.category || '').toLowerCase().trim() === targetCategoryStr);
+      }
+      merged = merged.filter(p => Number(p.price || 0) <= maxPrice);
+      if (selectedRating > 0) {
+        merged = merged.filter(p => Number(p.rating || 0) >= selectedRating);
       }
       setProducts(merged);
     } finally {
