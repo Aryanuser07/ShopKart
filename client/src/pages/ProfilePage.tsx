@@ -281,7 +281,12 @@ export const ProfilePage: React.FC = () => {
             >
               {orders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(order => {
                 const orderId = order._id || order.id;
-                const rawSt = (order as any).fulfillmentStatus || order.orderStatus || (order.isPaid ? 'Processing' : 'Order Placed');
+                const historyList = (order as any).trackingHistory || [];
+                const latestHistory = historyList.length > 0 ? historyList[historyList.length - 1] : null;
+                const derivedHistoryStatus = (latestHistory && latestHistory.status && latestHistory.status !== 'Pending' && latestHistory.status !== 'Order Placed')
+                  ? latestHistory.status
+                  : null;
+                const rawSt = derivedHistoryStatus || (order as any).fulfillmentStatus || order.orderStatus || (order.isPaid ? 'Processing' : 'Order Placed');
                 const statusText = rawSt === 'Pending' ? (order.isPaid ? 'Processing' : 'Order Placed') : rawSt;
                 const itemsList = order.orderItems || [];
                 const isRefunded = statusText === 'Refunded';

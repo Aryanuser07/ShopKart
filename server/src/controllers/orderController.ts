@@ -19,6 +19,14 @@ const formatOrder = (doc: any) => {
   const custName = o.customerName || uObj.name || o.shippingAddress?.fullName || 'ShopKart Customer';
   const custEmail = o.customerEmail || uObj.email || o.shippingAddress?.email || '';
 
+  const historyList = Array.isArray(o.trackingHistory) ? o.trackingHistory : [];
+  const latestHistory = historyList.length > 0 ? historyList[historyList.length - 1] : null;
+  const derivedHistoryStatus = (latestHistory && latestHistory.status && latestHistory.status !== 'Pending' && latestHistory.status !== 'Order Placed')
+    ? latestHistory.status
+    : null;
+
+  const finalStatus = derivedHistoryStatus || o.fulfillmentStatus || o.orderStatus || 'Processing';
+
   return {
     ...o,
     _id: idStr,
@@ -31,9 +39,9 @@ const formatOrder = (doc: any) => {
     },
     customerName: custName,
     customerEmail: custEmail,
-    orderStatus: o.orderStatus || o.fulfillmentStatus || 'Pending',
-    fulfillmentStatus: o.fulfillmentStatus || o.orderStatus || 'Pending',
-    paymentStatus: o.paymentStatus || (o.isPaid ? 'Paid' : 'Pending'),
+    orderStatus: finalStatus,
+    fulfillmentStatus: finalStatus,
+    paymentStatus: finalStatus === 'Refunded' ? 'Refunded' : (o.paymentStatus || (o.isPaid ? 'Paid' : 'Pending')),
     createdAt: o.createdAt ? new Date(o.createdAt).toISOString() : new Date().toISOString()
   };
 };

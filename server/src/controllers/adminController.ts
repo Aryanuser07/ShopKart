@@ -210,22 +210,32 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
     let orderDoc: any = null;
     let foundInDb = false;
 
-    if (mongoose.connection.readyState === 1 && mongoose.Types.ObjectId.isValid(id)) {
+    if (mongoose.connection.readyState === 1) {
       try {
-        orderDoc = await Order.findById(id);
-        if (orderDoc) foundInDb = true;
-      } catch (e) {
-        // Fallback
-      }
-    }
-
-    if (!orderDoc && mongoose.connection.readyState === 1) {
-      try {
-        const cleanId = String(id).replace(/^#/, '').replace(/^ord-?/i, '');
-        const regex = new RegExp(cleanId, 'i');
-        orderDoc = await Order.findOne({
-          $or: [{ trackingNumber: id }, { trackingNumber: regex }]
-        });
+        if (mongoose.Types.ObjectId.isValid(id)) {
+          orderDoc = await Order.findById(id);
+        }
+        if (!orderDoc) {
+          const cleanId = String(id).replace(/^#/, '').replace(/^ord-?/i, '').trim();
+          const regex = new RegExp(cleanId, 'i');
+          orderDoc = await Order.findOne({
+            $or: [
+              { trackingNumber: id },
+              { trackingNumber: regex },
+              { id: id },
+              { id: regex }
+            ]
+          });
+        }
+        if (!orderDoc) {
+          const cleanId = String(id).replace(/^#/, '').replace(/^ord-?/i, '').trim().toLowerCase();
+          const allDocs = await Order.find({});
+          orderDoc = allDocs.find((d: any) => {
+            const dId = String(d._id || d.id || '').toLowerCase();
+            const dTrack = String(d.trackingNumber || '').toLowerCase();
+            return dId === cleanId || dTrack === cleanId || dId.endsWith(cleanId) || cleanId.endsWith(dId) || dId.includes(cleanId);
+          });
+        }
         if (orderDoc) foundInDb = true;
       } catch (e) {
         // Fallback
