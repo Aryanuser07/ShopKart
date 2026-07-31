@@ -132,7 +132,13 @@ export const CartDrawer: React.FC = () => {
                         <span className="text-xs font-bold text-[#242b27] px-1.5">{quantity}</span>
                         <button
                           onClick={() => updateQuantity(product, quantity + 1)}
-                          className="w-6 h-6 flex items-center justify-center text-slate-500 hover:text-slate-900 transition cursor-pointer"
+                          disabled={quantity >= (product.stock ?? 0)}
+                          className={`w-6 h-6 flex items-center justify-center transition ${
+                            quantity >= (product.stock ?? 0)
+                              ? 'text-slate-300 cursor-not-allowed'
+                              : 'text-slate-500 hover:text-slate-900 cursor-pointer'
+                          }`}
+                          title={quantity >= (product.stock ?? 0) ? `Maximum available stock reached (${product.stock})` : 'Increase quantity'}
                         >
                           <Plus className="w-3 h-3" />
                         </button>

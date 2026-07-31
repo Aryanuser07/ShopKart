@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { CartItem, Product } from '../types';
-import { getDeletedProductIds } from '../utils/productStorage';
+import { getDeletedProductIds, getCustomProducts } from '../utils/productStorage';
+import api from '../services/api';
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -43,17 +44,76 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('shopkart_cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
+  // Live stock sync with server API & localStorage
   useEffect(() => {
+    const normalizeKey = (str: string | null | undefined): string => {
+      if (!str) return '';
+      return str
+        .toLowerCase()
+        .trim()
+        .replace(/[\u2010-\u2015\u2212\uFE58\uFE63\uFF0D]/g, '-')
+        .replace(/[^a-z0-9]/g, '');
+    };
+
+    const syncLiveStock = async () => {
+      const customProds = getDeletedProductIds(); // trigger check
+      const custom = getCustomProducts();
+      let serverProds: any[] = [];
+      try {
+        const res = await api.get('/products?limit=100');
+        if (res.data.products && Array.isArray(res.data.products)) {
+          serverProds = res.data.products;
+        }
+      } catch (e) {}
+
+      const allProds = [...custom, ...serverProds];
+
+      setCartItems(prev => {
+        let modified = false;
+        const updated = prev.map(item => {
+          const itemKeys = [item.product._id, item.product.id, item.product.slug, item.product.title]
+            .filter(Boolean)
+            .map(k => normalizeKey(k!.toString()));
+
+          const match = allProds.find(p => {
+            const pKeys = [p._id, p.id, p.slug, p.title]
+              .filter(Boolean)
+              .map(k => normalizeKey(k!.toString()));
+            return pKeys.some(pk => itemKeys.includes(pk));
+          });
+
+          if (match && typeof match.stock === 'number') {
+            const freshStock = match.stock;
+            const newQty = freshStock <= 0 ? 0 : Math.min(freshStock, item.quantity);
+            if (item.product.stock !== freshStock || item.quantity !== newQty) {
+              modified = true;
+              return {
+                ...item,
+                quantity: newQty,
+                product: { ...item.product, stock: freshStock }
+              };
+            }
+          }
+          return item;
+        });
+
+        const filtered = updated.filter(item => item.quantity > 0);
+        if (filtered.length !== prev.length) modified = true;
+        return modified ? filtered : prev;
+      });
+    };
+
     const syncDeletedProducts = () => {
       const deletedSet = new Set(getDeletedProductIds().map(id => id.toLowerCase()));
-      if (deletedSet.size === 0) return;
-
-      setCartItems(prev => prev.filter(item => {
-        const itemKeys = [item.product._id, item.product.id, item.product.slug, item.product.title?.trim()]
-          .filter(Boolean)
-          .map(k => k!.toString().toLowerCase());
-        return !itemKeys.some(k => deletedSet.has(k));
-      }));
+      if (deletedSet.size > 0) {
+        setCartItems(prev => prev.filter(item => {
+          const itemKeys = [item.product._id, item.product.id, item.product.slug, item.product.title?.trim()]
+            .filter(Boolean)
+            .map(k => k!.toString().toLowerCase());
+          return !itemKeys.some(k => deletedSet.has(k));
+        }));
+      }
+      syncLiveStock();
     };
 
     const handleLogout = () => {
@@ -66,28 +126,30 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     syncDeletedProducts();
     window.addEventListener('shopkart-products-updated', syncDeletedProducts);
     window.addEventListener('shopkart-user-logout', handleLogout);
+    window.addEventListener('focus', syncLiveStock);
 
     return () => {
       window.removeEventListener('shopkart-products-updated', syncDeletedProducts);
       window.removeEventListener('shopkart-user-logout', handleLogout);
+      window.removeEventListener('focus', syncLiveStock);
     };
   }, []);
 
   const addToCart = (product: Product, quantity = 1) => {
     const maxStock = typeof product.stock === 'number' ? Math.max(0, product.stock) : 99;
-    if (maxStock === 0) return;
+    if (maxStock <= 0) return;
 
     setCartItems(prev => {
       const keysToMatch = new Set(
         [product._id, product.id, product.slug, product.title?.trim()]
           .filter(Boolean)
-          .map(k => k!.toString().toLowerCase())
+          .map(k => k!.toString().toLowerCase().replace(/[^a-z0-9]/g, ''))
       );
 
       const existing = prev.find(item => {
         const itemKeys = [item.product._id, item.product.id, item.product.slug, item.product.title?.trim()]
           .filter(Boolean)
-          .map(k => k!.toString().toLowerCase());
+          .map(k => k!.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
         return itemKeys.some(k => keysToMatch.has(k));
       });
 
@@ -95,7 +157,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return prev.map(item => {
           const itemKeys = [item.product._id, item.product.id, item.product.slug, item.product.title?.trim()]
             .filter(Boolean)
-            .map(k => k!.toString().toLowerCase());
+            .map(k => k!.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
           if (itemKeys.some(k => keysToMatch.has(k))) {
             const newQty = Math.min(maxStock, item.quantity + quantity);
             return { ...item, quantity: newQty };
@@ -117,19 +179,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     const keysToMatch = new Set<string>();
     if (typeof productIdOrTarget === 'string') {
-      if (productIdOrTarget) keysToMatch.add(productIdOrTarget.toLowerCase());
+      if (productIdOrTarget) keysToMatch.add(productIdOrTarget.toLowerCase().replace(/[^a-z0-9]/g, ''));
     } else if (productIdOrTarget) {
-      if (productIdOrTarget._id) keysToMatch.add(productIdOrTarget._id.toString().toLowerCase());
-      if (productIdOrTarget.id) keysToMatch.add(productIdOrTarget.id.toString().toLowerCase());
-      if (productIdOrTarget.slug) keysToMatch.add(productIdOrTarget.slug.toString().toLowerCase());
-      if (productIdOrTarget.title) keysToMatch.add(productIdOrTarget.title.trim().toLowerCase());
+      if (productIdOrTarget._id) keysToMatch.add(productIdOrTarget._id.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+      if (productIdOrTarget.id) keysToMatch.add(productIdOrTarget.id.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+      if (productIdOrTarget.slug) keysToMatch.add(productIdOrTarget.slug.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+      if (productIdOrTarget.title) keysToMatch.add(productIdOrTarget.title.trim().toLowerCase().replace(/[^a-z0-9]/g, ''));
     }
 
     setCartItems(prev =>
       prev.map(item => {
         const itemKeys = [item.product._id, item.product.id, item.product.slug, item.product.title?.trim()]
           .filter(Boolean)
-          .map(k => k!.toString().toLowerCase());
+          .map(k => k!.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
         if (itemKeys.some(k => keysToMatch.has(k))) {
           const maxStock = typeof item.product.stock === 'number' ? Math.max(0, item.product.stock) : 99;
           const cappedQty = Math.min(maxStock, quantity);
