@@ -14,6 +14,14 @@ const formatAdminOrder = (doc: any) => {
   const custName = o.customerName || uObj.name || o.shippingAddress?.fullName || 'ShopKart Customer';
   const custEmail = o.customerEmail || uObj.email || o.shippingAddress?.email || '';
 
+  let finalStatus = o.orderStatus || o.fulfillmentStatus || 'Pending';
+  if (Array.isArray(o.trackingHistory) && o.trackingHistory.length > 0) {
+    const lastEvent = o.trackingHistory[o.trackingHistory.length - 1];
+    if (lastEvent && lastEvent.status) {
+      finalStatus = lastEvent.status;
+    }
+  }
+
   return {
     ...o,
     _id: idStr,
@@ -26,9 +34,9 @@ const formatAdminOrder = (doc: any) => {
     },
     customerName: custName,
     customerEmail: custEmail,
-    orderStatus: o.orderStatus || o.fulfillmentStatus || 'Pending',
-    fulfillmentStatus: o.fulfillmentStatus || o.orderStatus || 'Pending',
-    paymentStatus: o.paymentStatus || (o.isPaid ? 'Paid' : 'Pending'),
+    orderStatus: finalStatus,
+    fulfillmentStatus: finalStatus,
+    paymentStatus: finalStatus === 'Refunded' ? 'Refunded' : (o.paymentStatus || (o.isPaid ? 'Paid' : 'Pending')),
     createdAt: o.createdAt ? new Date(o.createdAt).toISOString() : new Date().toISOString()
   };
 };

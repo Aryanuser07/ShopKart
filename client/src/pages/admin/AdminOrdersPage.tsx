@@ -312,6 +312,13 @@ export const AdminOrdersPage: React.FC = () => {
       const paymentMethod = o.paymentMethod || 'Stripe';
       const isPaid = o.isPaid ?? (paymentMethod === 'Stripe');
       let fulfillmentStatus = o.fulfillmentStatus || o.orderStatus || o.status || 'Processing';
+      if (Array.isArray(o.trackingHistory) && o.trackingHistory.length > 0) {
+        const lastEvent = o.trackingHistory[o.trackingHistory.length - 1];
+        if (lastEvent && lastEvent.status) {
+          fulfillmentStatus = lastEvent.status;
+        }
+      }
+
       let paymentStatus: 'Paid' | 'Pending' | 'Refunded' = o.paymentStatus || (isPaid ? 'Paid' : 'Pending');
 
       if (fulfillmentStatus === 'Refunded') {
