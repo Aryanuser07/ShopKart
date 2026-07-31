@@ -24,28 +24,59 @@ export const CheckoutPage: React.FC = () => {
   const [error, setError] = useState('');
   const [liveCartItems, setLiveCartItems] = useState(cartItems);
 
-  // Sync cart items with fresh product stock from localStorage / API
+  // Sync cart items with fresh product stock from server API and localStorage
   useEffect(() => {
-    const syncStock = () => {
+    const normalizeKey = (str: string | null | undefined): string => {
+      if (!str) return '';
+      return str
+        .toLowerCase()
+        .trim()
+        .replace(/[\u2010-\u2015\u2212\uFE58\uFE63\uFF0D]/g, '-')
+        .replace(/[^a-z0-9]/g, '');
+    };
+
+    const syncStock = async () => {
+      let serverProducts: any[] = [];
+      try {
+        const res = await api.get('/products?limit=100');
+        if (res.data.products && Array.isArray(res.data.products)) {
+          serverProducts = res.data.products;
+        }
+      } catch (e) {
+        // Fallback
+      }
+
       const customProds = getCustomProducts();
+      const allSourceProds = [...customProds, ...serverProducts];
+
       const synced = cartItems.map(item => {
-        const pId = String(item.product._id || item.product.id || '').toLowerCase();
-        const pTitle = (item.product.title || '').trim().toLowerCase();
-        const match = customProds.find(
-          p => String(p._id || p.id || '').toLowerCase() === pId || (p.title && p.title.trim().toLowerCase() === pTitle)
-        );
+        const itemKeys = [item.product._id, item.product.id, item.product.slug, item.product.title]
+          .filter(Boolean)
+          .map(k => normalizeKey(k!.toString()));
+
+        const match = allSourceProds.find(p => {
+          const pKeys = [p._id, p.id, p.slug, p.title]
+            .filter(Boolean)
+            .map(k => normalizeKey(k!.toString()));
+          return pKeys.some(pk => itemKeys.includes(pk));
+        });
 
         if (match && typeof match.stock === 'number') {
           return { ...item, product: { ...item.product, stock: match.stock } };
         }
         return item;
       });
+
       setLiveCartItems(synced);
     };
 
     syncStock();
     window.addEventListener('shopkart-products-updated', syncStock);
-    return () => window.removeEventListener('shopkart-products-updated', syncStock);
+    window.addEventListener('focus', syncStock);
+    return () => {
+      window.removeEventListener('shopkart-products-updated', syncStock);
+      window.removeEventListener('focus', syncStock);
+    };
   }, [cartItems]);
 
   useEffect(() => {
