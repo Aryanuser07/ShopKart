@@ -12,25 +12,28 @@ const enrichProductWithReviews = (p: any) => {
   if (!p) return p;
   const targetObj = typeof p.toObject === 'function' ? p.toObject() : { ...p };
 
+  const normTitle = String(targetObj.title || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '');
   const keys = new Set([
     String(targetObj._id || '').toLowerCase(),
     String(targetObj.id || '').toLowerCase(),
     String(targetObj.slug || '').toLowerCase(),
-    String(targetObj.title || '').trim().toLowerCase()
-  ].filter(Boolean));
+    normTitle
+  ].filter(Boolean).map(s => s.replace(/[^a-z0-9]/g, '')));
 
   const matchingReviews = memoryStore.reviews.filter(r => {
-    const rProd = String(r.product || '').toLowerCase().trim();
-    return keys.has(rProd) || (targetObj.title && rProd.includes(targetObj.title.trim().toLowerCase()));
+    const rProd = String(r.product || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+    const rProdTitle = String((r as any).productTitle || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+    return keys.has(rProd) || (normTitle && (rProd.includes(normTitle) || normTitle.includes(rProd))) || (normTitle && rProdTitle && (rProdTitle.includes(normTitle) || normTitle.includes(rProdTitle)));
   });
 
   if (matchingReviews.length > 0) {
     const avg = matchingReviews.reduce((sum, r) => sum + Number(r.rating || 5), 0) / matchingReviews.length;
     targetObj.rating = Number(avg.toFixed(1));
-    targetObj.numReviews = matchingReviews.length;
+    targetObj.numReviews = Math.max(matchingReviews.length, Number(targetObj.numReviews || 0));
   } else {
+    const rNum = Number(targetObj.numReviews);
     targetObj.rating = targetObj.rating && targetObj.rating > 0 ? Number(targetObj.rating) : 5.0;
-    targetObj.numReviews = targetObj.numReviews || 0;
+    targetObj.numReviews = !isNaN(rNum) ? rNum : 0;
   }
 
   return targetObj;
@@ -93,17 +96,19 @@ export const getProducts = async (req: Request, res: Response) => {
         if (dbProducts && dbProducts.length > 0) {
           const dbKeys = new Set<string>();
           dbProducts.forEach(p => {
-            if (p._id) dbKeys.add(p._id.toString().toLowerCase());
-            if ((p as any).id) dbKeys.add((p as any).id.toString().toLowerCase());
-            if (p.slug) dbKeys.add(p.slug.toLowerCase());
-            if (p.title) dbKeys.add(p.title.trim().toLowerCase());
+            if (p._id) dbKeys.add(p._id.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+            if ((p as any).id) dbKeys.add((p as any).id.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+            if (p.slug) dbKeys.add(p.slug.toLowerCase().replace(/[^a-z0-9]/g, ''));
+            if (p.title) dbKeys.add(p.title.trim().toLowerCase().replace(/[^a-z0-9]/g, ''));
           });
 
           const extraMemProducts = memoryStore.products.filter(p => {
-            const pKeys = [p._id, p.id, p.slug, p.title?.trim()].filter(Boolean).map(k => k!.toString().toLowerCase());
+            const pKeys = [p._id, p.id, p.slug, p.title?.trim()].filter(Boolean).map(k => k!.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
             return !pKeys.some(k => dbKeys.has(k));
           });
-          const combined = [...extraMemProducts, ...dbProducts];
+
+          // DB products take priority over memoryStore duplicates
+          const combined = [...dbProducts, ...extraMemProducts];
           const paginatedCombined = combined.slice(0, limitNum).map(enrichProductWithReviews);
 
           return res.json({

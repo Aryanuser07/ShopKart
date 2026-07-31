@@ -167,8 +167,8 @@ export const mergeProductsWithCustom = (apiProducts: Product[]): Product[] => {
       customMatch.numReviews = mergedNumReviews;
 
       return {
-        ...apiP,
         ...customMatch,
+        ...apiP,
         rating: mergedRating,
         numReviews: mergedNumReviews,
         stock: mergedStock
